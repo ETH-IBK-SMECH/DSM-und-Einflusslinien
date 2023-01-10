@@ -2,7 +2,7 @@ function [Model, status, Meldung] = MatrizenStatik(inputFile)
 %% Beschreibung dieser Funktion
 % dies ist das main-file, welches darstellt in welcher Reihenfolge der Input behandelt wird bis zum Output
 
-addpath('Input','DSM','DSM\Funktionen\','Output','Zeichnen');
+addpath('Input','DSM','DSM/Funktionen','Output','Zeichnen');
 
 %% Input aquirieren
    % für den Moment erstellen wir händisch die entsprechenden Inputfiles. Später kommen diese direkt aus dem GUI.
