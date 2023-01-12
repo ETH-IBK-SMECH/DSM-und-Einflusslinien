@@ -134,7 +134,7 @@ for i = 1:nStaebe
     %maxM = max(SKStab(i).SK_VfM);
     %minM = min(SKStab(i).SK_VfM);
     mM = max(abs(maxM),abs(minM));
-    if mM < 1; mM = 1; end
+    if mM < 0.001; mM = 0.001; end
     axis([0 SKStab(i).L -mM-0.1*mM mM+0.1*mM]);
     axis ij;
 
