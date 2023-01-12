@@ -13,6 +13,8 @@ Die Software wurde mit dem Matlabrelease 2022b getestet.
 Mit der Software können eigene Tragsysteme mit verschiedenen Elementen (auch Federn, vorgeschriebene Verschiebungen, alle Stabendegelenke, verschiedene Arten von Lasten) entworfen werden. Danach kann ausgewählt werden, ob die Schnittkräfte, die Auflagerreaktionen oder die Einflusslinie angezeigt werden soll. Je nach gewünschtem Output muss man verschiedene Schritte im InputFile bearbeiten, dies ist jedoch verständlich erklärt im InputFile.
 
 Hier 2 Beispiele:
+![](docs/figures/SKDiagramm_10.jpg)
+![](docs/figures/EL_K7_2_Mc.jpg)
 
 Auch bietet die Software die Möglichkeit Stäbe des Tragwerks zu Teilsystemen zusammenzusetzen. Diese Option ist jedoch noch nicht vollständig integriert und ist für die Zukunft vorgesehen.
 
