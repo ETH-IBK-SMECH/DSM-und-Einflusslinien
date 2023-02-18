@@ -1,6 +1,7 @@
 function [model] = ModelVonInputFileTests(inputFile)
 %dieses File ruft die ursprünglichen Testfiles auf
 %falls dieses verwendet werden soll -> in MatrizenStatik auf Zeile 9 diese Funktion aufrufen
+%just a small change
     switch inputFile
         case 1
             model = InputFile1();
