@@ -20,7 +20,7 @@ function [out] = drawSKFig(model)
 
     meanL = mean([model.Analyse.Stab.L]);
  
-    skalierung = -1/(4*log(meanL)); %falls die Schnittkräfte nicht ersichtlich sind ändere die skalierung wie z.b. in der nächsten Zeile
+    skalierung = -abs(1/(4*log(meanL))); %falls die Schnittkräfte nicht ersichtlich sind ändere die skalierung wie z.b. in der nächsten Zeile
     %skalierung = -1/(10*meanL); %ändere x*meanL wie du möchtest
 
     nexttile;
