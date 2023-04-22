@@ -13,6 +13,10 @@ function [model] = ModelVonInputFile(inputFile)
             InputFileTest4; % Bsp. Schnittkräfte: Hausübung 6 Augabe 1
         case 5
             InputFileTest5; % Bsp. Einflusslinie: Kolloqium 7.2 Aufgabe 1
+        case 6
+            InputFile6;
+        case 7
+            InputFile7;
         otherwise
             disp('InputFile kann nicht gefunden werden.')     
     end
