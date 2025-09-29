@@ -226,7 +226,7 @@ function [out] = DirectStiffnessMethod(analysisModel)
         %Knotenlasten
         %KL für die DOF = 0 und element von Knoten
         for z = 1:Info.nKnotenLasten
-            IdxN = find(KnotenLast(i).node == Knoten);
+            IdxN = find(KnotenLast(z).node == Knoten);
             if ~isempty(IdxN) && KnotenLast(z).DOF == 0
                 IdxNdir = (IdxN-1)*3 + KnotenLast(z).dir;
                 Teilsystem(i).F_TS(IdxNdir) = Teilsystem(i).F_TS(IdxNdir) + KnotenLast(z).val;
