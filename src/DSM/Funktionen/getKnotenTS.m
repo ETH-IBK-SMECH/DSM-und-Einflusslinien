@@ -1,6 +1,6 @@
 function KnotenTS = getKnotenTS(KdS,anzahlStaebe)
 
-    KnotesTS = zeros(anzahlStaebe+1,1);
+    KnotenTS = zeros(anzahlStaebe+1,1);
     
     %[3 2 5 3 4 5]
     %zu [2 3 5 4]
