@@ -179,9 +179,9 @@ function [out] = DirectStiffnessMethod(analysisModel)
 
    
 %% Systemgrössen allozieren
-    K_sys        = zeros(nDOF, nDOF);
-    F_sys_Knoten = zeros(nDOF,1); 
-    F_sys_Stab   = zeros(nDOF,1);
+    K_sys        = spalloc(nDOF, nDOF, 20*nDOF);  %20*nDOF is approximation for amount of non-zero elements. Needed for sparse matrix memory-allocation.
+    F_sys_Knoten = sparse(nDOF,1); 
+    F_sys_Stab   = sparse(nDOF,1);
 
       
 %% Stablasten
