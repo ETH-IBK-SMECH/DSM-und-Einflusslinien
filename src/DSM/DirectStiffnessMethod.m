@@ -232,7 +232,7 @@ function [out] = DirectStiffnessMethod(analysisModel)
                 Teilsystem(i).F_TS(IdxNdir) = Teilsystem(i).F_TS(IdxNdir) + KnotenLast(z).val;
             end
         end
-        disp(Teilsystem(1))
+        
         %F_TS kondensieren
         Teilsystem(i).F_TS_kond = kondensiereFTS(Teilsystem(i));
 
