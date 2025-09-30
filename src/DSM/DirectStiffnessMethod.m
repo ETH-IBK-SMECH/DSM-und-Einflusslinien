@@ -7,7 +7,7 @@ function [out] = DirectStiffnessMethod(analysisModel)
 %% Clean up nicht nötig da input bereinigt
 
 %% Alias
-   [Knoten, Stab, Teilsystem, Feder, KnotenLast, StabLast, SPC, Info, gew_output, Einflusslinie] = extractFields(analysisModel);
+  [Knoten, Stab, Teilsystem, Feder, KnotenLast, StabLast, SPC, Info, gew_output, Einflusslinie] = extractFields(analysisModel);
 
 %% Parameter
    %mehrheitlich bereits abgedeckt von Info._
@@ -287,13 +287,25 @@ function [out] = DirectStiffnessMethod(analysisModel)
    
    isVVDOF = false(1, nDOF);
 
+   % ensure SPC(i).DOF exists and starts at 0
+   [SPC(1:Info.nSPC).DOF] = deal(0);
+
    %SPC DOFs zuewiise
    for i = 1:Info.nSPC
-       SPCIdx = (SPC(i).node-1)*3 + SPC(i).dir;
-       if(~isequal(DOF(SPCIdx),0))
-           SPC(i).DOF = DOF(SPCIdx);
+       if ~(isfinite(SPC(i).node) && SPC(i).node >= 1 && SPC(i).node <= Info.nKnoten), continue; end
+       if ~(isfinite(SPC(i).dir)  && SPC(i).dir  >= 1 && SPC(i).dir <= 3), continue; end
+
+       localIdx = (SPC(i).node-1)*3 + SPC(i).dir;
+
+       % localIdx must point inside DOF, and DOF(localIdx) must be valid
+       if localIdx < 1 || localIdx > numel(DOF), continue; end
+
+       g = DOF(localIdx);                               % global DOF
+       if g >= 1 && g <= nDOF                           % only valid DOFs
+        SPC(i).DOF = g;
+        isVVDOF(g) = true;
        end
-       isVVDOF(SPC(i).DOF) = true;
+  
    end
 
    
