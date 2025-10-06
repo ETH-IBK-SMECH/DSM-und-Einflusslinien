@@ -15,7 +15,7 @@ function F_TS_kond = kondensiereFTS(TS)
     iActive = isActive(i);
     i = i(iActive);
 
-    F_TS_kond(eActive) = F_TS(e) - K(e,i)*K(i,i)^(-1)*F_TS(i);
+    F_TS_kond(eActive) = F_TS(e) - K(e,i) * (K(i,i) \ F_TS(i));
 
 end
 

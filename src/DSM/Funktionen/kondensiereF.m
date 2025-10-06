@@ -7,7 +7,7 @@ function [f_loc] = kondensiereF(flv, klv, activeDOF)
     e = find(activeDOF);
     i = find(~activeDOF);
 
-    f_loc(e) = flv(e) - klv(e,i)*klv(i,i)^(-1)*flv(i);
+    f_loc(e) = flv(e) - klv(e,i) * (klv(i,i) \ flv(i));
 
 end
 

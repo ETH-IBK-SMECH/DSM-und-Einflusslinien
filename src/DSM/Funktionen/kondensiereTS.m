@@ -50,7 +50,11 @@ function [activeTS, k_glob, isActiveTS, K_sys_TS] = kondensiereTS(Teilsystem,Sta
     iActive = isActive(i);
     i = i(iActive);
 
-    k_glob(eActive,eActive) = K_sys_TS(e,e) - K_sys_TS(e,i)*K_sys_TS(i,i)^(-1)*K_sys_TS(i,e);
+    K_ei = K_sys_TS(e,i);
+    K_ii = K_sys_TS(i,i);
+    K_ie = K_sys_TS(i,e);
+    K_ee = K_sys_TS(e,e);
+    k_glob(e,e) = K_ee - K_ei * (K_ii \ K_ie);
 
 
 end
