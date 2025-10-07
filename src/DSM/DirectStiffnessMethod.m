@@ -42,17 +42,25 @@ function [out] = DirectStiffnessMethod(analysisModel)
             Teilsystem(i).KnotenTSgeordnet = getKnotenTS(KnotenDesTeilSys,length(Staebe));
 
       end                 
-
       
 %% Vorhandene StabDOF
 
     if ~isfield(Info,'nKnotenDOF') || isempty(Info.nKnotenDOF)
         Info.nKnotenDOF = 3;
     end
+
+    nkd = Info.nKnotenDOF;      % DOFs per node
+    n6 = 2*nkd;                 % DOFs for 2-node member
+    nodeDOFs = @(n) (n-1)*nkd + (1:nkd);
+    pairDOFs = @(s,e) [nodeDOFs(s), nodeDOFs(e)];
+    firstHalf  = 1:nkd;
+    secondHalf = nkd + (1:nkd);
+    transIdx = [1, 2, nkd+1, nkd+2];
+
    %für alle Stäbe   
    for i = 1:Info.nStaebe
       %Startannahme: alle DOF vorhanden
-      vorhandeneStabDOF = true(1,6);
+      vorhandeneStabDOF = true(1,n6);
 
       %falls Stabendgelenke, dann existiert Widerstand in DOF-Richtung nicht
       vorhandeneStabDOF(Stab(i).sRelease) = false;
@@ -63,9 +71,8 @@ function [out] = DirectStiffnessMethod(analysisModel)
       Stab(i).vorhandeneDOF = vorhandeneStabDOF;       
    end
 
-   
-
-   %% Stabsteifigkeiten
+  
+%% Stabsteifigkeiten
    %lokales Koordinatensystem
    for i = 1:Info.nStaebe
        sX = Knoten(Stab(i).sNode).x; eX = Knoten(Stab(i).eNode).x; %x-Koordinate für Start- und Endknoten
@@ -80,7 +87,7 @@ function [out] = DirectStiffnessMethod(analysisModel)
        Stab(i).k_glob  = rotiereLocalToGlobal_K(Stab(i).k_loc, Stab(i).R);
 
        %leere P_int erstellen für jeden Stab (für p_int am schluss)
-       Stab(i).P_int = zeros(6,1);
+       Stab(i).P_int = zeros(n6,1);
    end           
 
    
@@ -92,7 +99,6 @@ function [out] = DirectStiffnessMethod(analysisModel)
 
     isActiveDOF = false(1,Info.nKnoten * Info.nKnotenDOF); 
 
-
     %activeStabDOF für jeden Stab -> wird auch für Kondensation von TS benötigt
     for i = 1:Info.nStaebe
         % Start mit vorhandenen DOF (Freigaben etc. sind schon berücksichtigt)
@@ -103,10 +109,10 @@ function [out] = DirectStiffnessMethod(analysisModel)
     
         if isV
             % Vertikal: x/y vertauschen (auch an der Endknoten-Seite)
-            Stab(i).activeStabDOF([1,2,4,5]) = Stab(i).activeStabDOF([2,1,5,4]);
+            Stab(i).activeStabDOF(transIdx) = Stab(i).activeStabDOF(transIdx([2,1,4,3]));
         elseif ~isH
             % Geneigt: beide Translationsfreiheiten aktivieren
-            Stab(i).activeStabDOF([1,2,4,5]) = true;
+            Stab(i).activeStabDOF(transIdx) = true;
         end
     end
 
@@ -124,21 +130,15 @@ function [out] = DirectStiffnessMethod(analysisModel)
     %Teilsys DOFs aktivieren 
     for i = 1:Info.nTeilsys
         sNodeTS = Teilsystem(i).KnotenTSgeordnet(1);
-        sNodesTS = sNodeTS*3-2:sNodeTS*3;
         eNodeTS = Teilsystem(i).KnotenTSgeordnet(end);
-        eNodesTS = eNodeTS*3-2:eNodeTS*3;
-        nodes = [sNodesTS,eNodesTS];
+        nodes = pairDOFs(sNodeTS, eNodeTS);
         activeTSdof = nodes(Teilsystem(i).activeTSDOFextern);
         isActiveDOF = setFlagsIfValid(activeTSdof, isActiveDOF);
     end
 
     %DOFs aktivieren für Stäbe die nicht in einem TS sind
     for i = find(~[Stab.inTeilSys])
-
-        sNodeDOF = Stab(i).sNode*3-2:Stab(i).sNode*3;
-        eNodeDOF = Stab(i).eNode*3-2:Stab(i).eNode*3;
-        stabDOF = [sNodeDOF, eNodeDOF];
-
+        stabDOF = pairDOFs(Stab(i).sNode, Stab(i).eNode);
         active = stabDOF(Stab(i).activeStabDOF); %filtert die wirklich aktiven Dofs nach globale Dof nummerierung
         isActiveDOF = setFlagsIfValid(active, isActiveDOF);
     end
@@ -146,7 +146,7 @@ function [out] = DirectStiffnessMethod(analysisModel)
 
     %überprüfen, ob Feder DOF aktiviert
     for i = 1:Info.nFedern
-       IdxDOF = (Feder(i).node-1)*3 + Feder(i).dir;
+       IdxDOF = (Feder(i).node-1)*nkd + Feder(i).dir;
        isActiveDOF = setFlagsIfValid(IdxDOF, isActiveDOF);
     end
 
@@ -157,7 +157,7 @@ function [out] = DirectStiffnessMethod(analysisModel)
 
     %activeDOF auf Stab-Stufe (den StabDOFs werden Indices zugeordnet)
     for i=find(~[Stab.inTeilSys])
-        loc6 = [ (Stab(i).sNode-1)*3 + (1:3), (Stab(i).eNode-1)*3 + (1:3) ];
+        loc6 = pairDOFs(Stab(i).sNode, Stab(i).eNode);
         glob6 = arrayfun(@(idx) safeDOF(idx, DOF), loc6);
         Stab(i).DOF = glob6(Stab(i).activeStabDOF);
     end
@@ -165,8 +165,9 @@ function [out] = DirectStiffnessMethod(analysisModel)
 
     %DOFs zueordne uf Teilsystem-Stufe
     for i = 1:Info.nTeilsys
-        TSStartEnde = [Teilsystem(i).KnotenTSgeordnet(1),Teilsystem(i).KnotenTSgeordnet(end)];
-        loc6 = [ (TSStartEnde(1)-1)*3 + (1:3), (TSStartEnde(2)-1)*3 + (1:3) ];
+        sNodeTS = Teilsystem(i).KnotenTSgeordnet(1);
+        eNodeTS = Teilsystem(i).KnotenTSgeordnet(end);
+        loc6  = pairDOFs(sNodeTS, eNodeTS);
         glob6 = arrayfun(@(idx) safeDOF(idx, DOF), loc6);
         Teilsystem(i).DOF = glob6(Teilsystem(i).activeTSDOFextern);
     end
@@ -210,7 +211,7 @@ function [out] = DirectStiffnessMethod(analysisModel)
         % Full DOF vector for all TS nodes in order
         KnotenTS = Teilsystem(i).KnotenTSgeordnet;           % e.g. [2 3 5 4]
         nTSNodes = numel(KnotenTS);
-        Teilsystem(i).F_TS = zeros(nTSNodes*3, 1);
+        Teilsystem(i).F_TS = zeros(nTSNodes*nkd, 1);
 
         %Stablasten
         StaebeTS = Teilsystem(i).BeteiligteStaebe;
@@ -226,12 +227,12 @@ function [out] = DirectStiffnessMethod(analysisModel)
                 ePos = find(KnotenTS == eNode, 1, 'first');
                 if isempty(sPos) || isempty(ePos), continue; end  % safety
     
-                sIdx = (sPos-1)*3 + (1:3);
-                eIdx = (ePos-1)*3 + (1:3);
+                sIdx = (sPos-1)*nkd + (firstHalf);
+                eIdx = (ePos-1)*nkd + (firstHalf);
     
                 %F_sys = F_Knoten - F_Stab
-                Teilsystem(i).F_TS(sIdx) = Teilsystem(i).F_TS(sIdx) - StabLast(j).f_glob(1:3);
-                Teilsystem(i).F_TS(eIdx) = Teilsystem(i).F_TS(eIdx) - StabLast(j).f_glob(3+1:2*3);
+                Teilsystem(i).F_TS(sIdx) = Teilsystem(i).F_TS(sIdx) - StabLast(j).f_glob(firstHalf);
+                Teilsystem(i).F_TS(eIdx) = Teilsystem(i).F_TS(eIdx) - StabLast(j).f_glob(secondHalf);
             end
         end
             
@@ -242,7 +243,7 @@ function [out] = DirectStiffnessMethod(analysisModel)
             node = KnotenLast(z).node;
             pos  = find(KnotenTS == node, 1, 'first');
             if isempty(pos), continue; end
-            gIdx = (pos-1)*3 + KnotenLast(z).dir;
+            gIdx = (pos-1)*nkd + KnotenLast(z).dir;
             if gIdx >= 1 && gIdx <= numel(Teilsystem(i).F_TS)
                 Teilsystem(i).F_TS(gIdx) = Teilsystem(i).F_TS(gIdx) + KnotenLast(z).val;
             end
@@ -352,9 +353,9 @@ function [out] = DirectStiffnessMethod(analysisModel)
    %SPC DOFs zuewiise
    for i = 1:Info.nSPC
        if ~(isfinite(SPC(i).node) && SPC(i).node >= 1 && SPC(i).node <= Info.nKnoten), continue; end
-       if ~(isfinite(SPC(i).dir)  && SPC(i).dir  >= 1 && SPC(i).dir <= 3), continue; end
+       if ~(isfinite(SPC(i).dir)  && SPC(i).dir  >= 1 && SPC(i).dir <= nkd), continue; end
 
-       localIdx = (SPC(i).node-1)*3 + SPC(i).dir;
+       localIdx = (SPC(i).node-1)*nkd + SPC(i).dir;
 
         g = safeDOF(localIdx, DOF);                               % global DOF
         SPC(i).DOF = g;
@@ -362,7 +363,6 @@ function [out] = DirectStiffnessMethod(analysisModel)
   
    end
 
-   
    %komplizierte Randbedingunen wie z.B.
       %- die multi-point constraints bei der Einflusslinie
       %- dehnstarrr und/oder biegesteif in der numerischen Analyse
@@ -385,26 +385,26 @@ function [out] = DirectStiffnessMethod(analysisModel)
 
     %Lagrange Multiplier Adjunction für Einflusslinie
     if gew_output == 2 && Einflusslinie.TypEL ~=4
-        U_sys(end+3) = 0;
+        U_sys(end+nkd) = 0;
 
         sizeK = size(K_sys,2);
-        A1 = zeros(3,sizeK-6);
+        A1 = zeros(nkd,sizeK-n6);
         A2 = [1,0,0,-1, 0, 0;
               0,1,0, 0,-1, 0;
               0,0,1, 0, 0,-1] ;
         A = [A1,A2];
 
-        F_sys2 = zeros(3,1);
+        F_sys2 = zeros(nkd,1);
         F_sys2(Einflusslinie.TypEL) = -1;
         if Einflusslinie.TypEL == 2; F_sys2(Einflusslinie.TypEL) = 1; end
 
         F_sys = [F_sys; F_sys2];
 
         K_sys = [K_sys, A';
-                 A, zeros(3)];
+                 A, zeros(nkd)];
 
-        kond.s(end+1:end+3) = false;
-        kond.f(end+1:end+3) = true;
+        kond.s(end+1:end+nkd) = false;
+        kond.f(end+1:end+nkd) = true;
     end
 
 
@@ -433,7 +433,7 @@ function [out] = DirectStiffnessMethod(analysisModel)
 
 
    if gew_output == 2 && Einflusslinie.TypEL ~=4
-       U_sys_kond = U_sys_kond(1:end-3);
+       U_sys_kond = U_sys_kond(1:end-nkd);
    end
 
    U_sys(kond.DOF) = U_sys(kond.DOF) + U_sys_kond;
@@ -443,13 +443,14 @@ function [out] = DirectStiffnessMethod(analysisModel)
       %- dehnstarrr und/oder biegesteif in der symbolischen Analyse (limit as EA-->inf)
       %- siehe hierzu https://ch.mathworks.com/help/symbolic/sym.limit.html
    
+
 %% Lösungzuweisen
    %z.B. indem bei den Teilsystemen die internen DOF errechnet werden (Umkehr des Kondensieren der internen DOF)
    
    for i = find(~[Stab.inTeilSys])
        %Stab(i).u_glob = U_sys(Stab(i).DOF);
        %eso oder mit zeros initiere und mache
-        Stab(i).u_glob = zeros(6,1);
+        Stab(i).u_glob = zeros(n6,1);
         d   = Stab(i).DOF;
         a6  = find(Stab(i).activeStabDOF);
         keep = d ~= 0;
@@ -461,7 +462,7 @@ function [out] = DirectStiffnessMethod(analysisModel)
    end
 
    for i = 1:Info.nTeilsys
-        Teilsystem(i).u_glob = zeros(6,1);
+        Teilsystem(i).u_glob = zeros(n6,1);
         d   = Teilsystem(i).DOF;
         a6  = find(Teilsystem(i).activeTSDOFextern);
         keep = d ~= 0;
@@ -472,9 +473,6 @@ function [out] = DirectStiffnessMethod(analysisModel)
 
    %do u_i usefinge wider mit zruggrächne
    %när u_i de Stäb zuewiise und SK usefinge
-
-
-   
    
 %% Nachrechnung
    %Stabendkräfte
@@ -487,44 +485,33 @@ function [out] = DirectStiffnessMethod(analysisModel)
    end
 
    %Auflagerkräfte
+    
+   %Trims matrices (necessary for LM augmented case)
+    K_phys   = K_sys(1:nDOF, 1:nDOF);
+    F_k_phys = F_sys_Knoten(1:nDOF);
+    F_s_phys = F_sys_Stab(1:nDOF);
+    
+    R_sys = K_phys * U_sys - (F_k_phys - F_s_phys); %Internal - External forces
 
-   SummeInDOF = zeros(nDOF,1);
-
-    for i = find(~[Stab.inTeilSys])
-        d   = Stab(i).DOF;
-        a6  = find(Stab(i).activeStabDOF);
-        keep = d ~= 0;
-        if any(keep)
-            SummeInDOF(d(keep)) = SummeInDOF(d(keep)) + Stab(i).q_glob(a6(keep));
-        end
-    end
-
-    for i = 1:Info.nKnotenLasten
-        g = KnotenLast(i).DOF;
-        if g ~= 0
-            SummeInDOF(g) = SummeInDOF(g) - KnotenLast(i).val;
-        end
-    end
-
-
+    % Assign to supports
     for i = 1:Info.nSPC
         g = SPC(i).DOF;
         if g ~= 0
-            SPC(i).Reaktion = SummeInDOF(g);
+            SPC(i).Reaktion = R_sys(g);
         else
             SPC(i).Reaktion = 0;
         end
     end
     
+    % Assign to springs
     for i = 1:Info.nFedern
         g = Feder(i).DOF;
         if g ~= 0
-            Feder(i).Reaktion = SummeInDOF(g);
+            Feder(i).Reaktion = R_sys(g);
         else
             Feder(i).Reaktion = 0;
         end
     end
-
 
    %Verdrehungen an einem Momentengelenk
 
