@@ -83,7 +83,7 @@ function [out] = DirectStiffnessMethod(analysisModel)
        Stab(i).R = getR(Stab(i).c, Stab(i).s); %Rotationsmatrix
        
        Stab(i).k_loc_v = getK(Stab(i).E, Stab(i).A, Stab(i).Iy, Stab(i).L);
-       Stab(i).k_loc   = kondensiereK(Stab(i).k_loc_v, Stab(i).vorhandeneDOF);
+       [Stab(i).k_loc, ~] = condensation(Stab(i).k_loc_v, [], Stab(i).vorhandeneDOF, 'preserve_size', true);
        Stab(i).k_glob  = rotiereLocalToGlobal_K(Stab(i).k_loc, Stab(i).R);
 
        %leere P_int erstellen für jeden Stab (für p_int am schluss)
@@ -119,13 +119,9 @@ function [out] = DirectStiffnessMethod(analysisModel)
 
     %TeilSys kondensieren mithilfe globalen stabilen Steifigkeitsmatrizen
     for i = 1:Info.nTeilsys
-        [Teilsystem(i).activeTSDOFextern, Teilsystem(i).k_glob, Teilsystem(i).isActiveTSDOF, Teilsystem(i).K_sys_TS] = kondensiereTS(Teilsystem(i), Stab);
-        %bruchts k_loc überhaupt? vilech für lehrzwecke?
-        %c mit snode & enode 
-        %s
-        %R*K_glob*R' = K_loc
+        [Teilsystem(i).k_glob, Teilsystem(i).F_TS_kond, Teilsystem(i).activeTSDOFextern, Teilsystem(i).isActiveTSDOF, Teilsystem(i).K_sys_TS] ...
+        = tsAssembleAndCondense(Teilsystem(i), Stab, nkd);
     end
-
 
     %Teilsys DOFs aktivieren 
     for i = 1:Info.nTeilsys
@@ -195,9 +191,8 @@ function [out] = DirectStiffnessMethod(analysisModel)
     for i = 1:Info.nStabLasten
         IdxStab = StabLast(i).stab;
         StabLast(i).f_loc = getF(StabLast(i), Stab(IdxStab).L);
-        StabLast(i).f_loc = kondensiereF(StabLast(i).f_loc, Stab(IdxStab).k_loc_v, Stab(IdxStab).vorhandeneDOF);
+        [~, StabLast(i).f_loc] = condensation(Stab(IdxStab).k_loc_v, StabLast(i).f_loc, Stab(IdxStab).vorhandeneDOF, 'preserve_size', true);
         Stab(IdxStab).P_int = Stab(IdxStab).P_int + StabLast(i).f_loc;
-
         StabLast(i).f_glob = rotiereLocalToGlobal_F(StabLast(i).f_loc, Stab(IdxStab).R);
     end
 
@@ -209,7 +204,7 @@ function [out] = DirectStiffnessMethod(analysisModel)
 
     for i = 1:Info.nTeilsys
         % Full DOF vector for all TS nodes in order
-        KnotenTS = Teilsystem(i).KnotenTSgeordnet;           % e.g. [2 3 5 4]
+        KnotenTS = Teilsystem(i).KnotenTSgeordnet;
         nTSNodes = numel(KnotenTS);
         Teilsystem(i).F_TS = zeros(nTSNodes*nkd, 1);
 
@@ -250,7 +245,8 @@ function [out] = DirectStiffnessMethod(analysisModel)
         end
         
         %F_TS kondensieren
-        Teilsystem(i).F_TS_kond = kondensiereFTS(Teilsystem(i));
+        [~, Teilsystem(i).F_TS_kond] = tsAssembleAndCondense(Teilsystem(i), Stab, nkd);
+
 
     end
 
@@ -260,7 +256,7 @@ function [out] = DirectStiffnessMethod(analysisModel)
    %Teilsys für jede k_sys addiere und när no bi laschte
    %Achtung bi F_knoten -> mit .dof ~= 0 arbeite!
 
-   idxFreeStab = find(~[Stab.inTeilSys]);    % reuse elsewhere if you like
+   idxFreeStab = find(~[Stab.inTeilSys]);    
     for ii = 1:numel(idxFreeStab)
         i   = idxFreeStab(ii);
         d   = Stab(i).DOF;
@@ -295,7 +291,7 @@ function [out] = DirectStiffnessMethod(analysisModel)
     for i = 1:Info.nFedern
         g = Feder(i).DOF;
         if g ~= 0
-            K_sys = K_sys + sparse(g, g, Feder(i).val, nDOF, nDOF);  % or .k
+            K_sys = K_sys + sparse(g, g, Feder(i).val, nDOF, nDOF); 
         end
     end
 
@@ -410,8 +406,7 @@ function [out] = DirectStiffnessMethod(analysisModel)
 
     %K_ff \ f_f_kond
     %f_f_kond = f_f - K_fs*u_s
-    kond.F_sys_f_kond = F_sys(kond.f) - K_sys(kond.f,kond.s)*U_sys(kond.s);
-    kond.K_sys_ff = K_sys(kond.f,kond.f);
+    [kond.K_sys_ff, kond.F_sys_f_kond] = condensation(K_sys, F_sys, kond.f, 'preserve_size', false, 'known_ui', U_sys(kond.s));
 
     
 %% Lösen
@@ -490,8 +485,9 @@ function [out] = DirectStiffnessMethod(analysisModel)
     K_phys   = K_sys(1:nDOF, 1:nDOF);
     F_k_phys = F_sys_Knoten(1:nDOF);
     F_s_phys = F_sys_Stab(1:nDOF);
+    U_phys = U_sys(1:nDOF);
     
-    R_sys = K_phys * U_sys - (F_k_phys - F_s_phys); %Internal - External forces
+    R_sys = K_phys * U_phys - (F_k_phys - F_s_phys); %Internal - External forces
 
     % Assign to supports
     for i = 1:Info.nSPC
