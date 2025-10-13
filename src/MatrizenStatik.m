@@ -2,7 +2,8 @@ function [Model, status, Meldung] = MatrizenStatik(inputFile)
 %% Beschreibung dieser Funktion
 % dies ist das main-file, welches darstellt in welcher Reihenfolge der Input behandelt wird bis zum Output
 
-addpath('Input','DSM',['DSM' filesep 'Funktionen'],'Output','Zeichnen');
+addpath('Input','Output','Zeichnen');
+addpath(genpath('DSM'));
 
 
 %% Input aquirieren
@@ -26,7 +27,7 @@ addpath('Input','DSM',['DSM' filesep 'Funktionen'],'Output','Zeichnen');
     end
 
 %% System Lösen (Model.Analyse._ lösen)
-   [Model.Analyse] = DirectStiffnessMethod([Model.Analyse]);
+   [Model.Analyse] = solveDSM([Model.Analyse]);
 
 %% Output darstellen
    [Model.Output] = ZusammenSetzen([Model.Analyse]);

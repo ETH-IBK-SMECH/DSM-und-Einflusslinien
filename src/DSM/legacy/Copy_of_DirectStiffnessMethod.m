@@ -1,4 +1,4 @@
-function [out] = DirectStiffnessMethod(analysisModel)
+function [out] = DirectStiffnessMethodlegacy(analysisModel)
    %{
    in = Model.Analyse._
    out = in (weil Matlab keine Pointer bzw. kein pass-by-reference unterstützt)

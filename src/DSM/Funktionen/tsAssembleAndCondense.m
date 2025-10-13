@@ -2,31 +2,36 @@ function [k_glob, F_TS_kond, activeTSDOFextern, isActiveTSDOF, K_sys_TS] = tsAss
 % Assemble TS stiffness from members, mark active DOFs, define externals,
 % and condense stiffness (and force if TS.F_TS is present) via condensation().
 
-Knoten = TS.KnotenTSgeordnet;       % e.g., [2 3 5 4]
-nTS    = numel(Knoten);
-N      = nTS * nkd;
+% quick exit for empty/invalid TS
+if ~isfield(TS,'BeteiligteStaebe') || isempty(TS.BeteiligteStaebe) || ...
+   ~isfield(TS,'KnotenTSgeordnet') || numel(TS.KnotenTSgeordnet) < 2
+    k_glob            = zeros(2*nkd);
+    F_TS_kond         = zeros(2*nkd,1);
+    activeTSDOFextern = false(1, 2*nkd);
+    isActiveTSDOF     = false(1, 0);
+    K_sys_TS          = zeros(0);
+    return;
+end
 
-KTS      = zeros(N, N);
-isActive = false(1, N);
+Knoten = TS.KnotenTSgeordnet;
+nTS = numel(Knoten); N = nTS*nkd;
+KTS = zeros(N,N); isActive = false(1,N);
 
-% assemble K_sys_TS from participating members
 for s = TS.BeteiligteStaebe
-    isPos = find(Knoten == Stab(s).sNode, 1, 'first');
-    iePos = find(Knoten == Stab(s).eNode, 1, 'first');
+    isPos = find(Knoten == Stab(s).sNode, 1);
+    iePos = find(Knoten == Stab(s).eNode, 1);
     if isempty(isPos) || isempty(iePos), continue; end
 
     sIdx = (isPos-1)*nkd + (1:nkd);
     eIdx = (iePos-1)*nkd + (1:nkd);
 
-    Kg = Stab(s).k_glob;  % (2*nkd x 2*nkd)
+    Kg = Stab(s).k_glob;  % <-- from Stab, not ele
 
-    % four sub-blocks
     KTS(sIdx, sIdx) = KTS(sIdx, sIdx) + Kg(1:nkd,          1:nkd);
     KTS(eIdx, eIdx) = KTS(eIdx, eIdx) + Kg(nkd+1:end, nkd+1:end);
     KTS(sIdx, eIdx) = KTS(sIdx, eIdx) + Kg(1:nkd,      nkd+1:end);
     KTS(eIdx, sIdx) = KTS(eIdx, sIdx) + Kg(nkd+1:end,       1:nkd);
 
-    % active flags from member masks
     isActive(sIdx(Stab(s).activeStabDOF(1:nkd)))       = true;
     isActive(eIdx(Stab(s).activeStabDOF(nkd+1:end)))   = true;
 end
