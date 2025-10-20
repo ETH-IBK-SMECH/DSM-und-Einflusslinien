@@ -1,6 +1,5 @@
-function ele = lokaleNachGlobal(ele)
+function Stab = lokaleNachGlobal(Stab)
 % [Schritt 1, Rotation] lokale → globale Steifigkeitsblöcke
-for i = 1:numel(ele)
-    ele(i).k_glob = rotiereLocalToGlobal_K(ele(i).k_loc, ele(i).R); % existing function
-end
+for i = 1:numel(Stab)
+    Stab(i).k_glob = rotiereLocalToGlobal_K(Stab(i).k_loc, Stab(i).R);
 end

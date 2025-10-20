@@ -1,29 +1,26 @@
-function ele = stabkraefteBerechnen(ele, U_sys, maps, model)
+function Stab = stabkraefteBerechnen(Stab, U_sys, nkd)
 % [Schritt 8] Stabendkräfte (lokal/global) berechnen
-[~, Stab, ~, ~, ~, ~, ~, Info] = extractFields(model);
-n6 = maps.n6;
-
-for i = find(~[Stab.inTeilSys])
-    d   = Stab(i).DOF;
-    a6  = find(Stab(i).activeStabDOF);
+n6 = 2*nkd;
+for i = 1:numel(Stab)
+    d    = Stab(i).dof_e;                         % 1×(2*nkd)
+    mask = Stab(i).activeStabDOF(:)' & (d~=0);    % 1×(2*nkd) logical
     u_glob = zeros(n6,1);
-    keep = d ~= 0;
-    if any(keep)
-        u_glob(a6(keep)) = u_glob(a6(keep)) + U_sys(d(keep));
+    if any(mask)
+        u_glob(mask) = U_sys(d(mask));
     end
-    u_loc = rotiereGlobalToLocal_u(u_glob, ele(i).R);                   % existing
-    q_loc = ele(i).k_loc * u_loc + ele(i).P_int;
-    q_glob = rotiereLocalToGlobal_F(q_loc, ele(i).R);                   % existing
+    u_loc  = rotiereGlobalToLocal_u(u_glob, Stab(i).R);
+    q_loc  = Stab(i).k_loc * u_loc + Stab(i).P_int;
+    q_glob = rotiereLocalToGlobal_F(q_loc, Stab(i).R);
 
-    ele(i).u_glob = u_glob; ele(i).u_loc = u_loc;
-    ele(i).q_loc  = q_loc;  ele(i).q_glob = q_glob;
-    ele(i).q_loc_sk = q_loc .* [-1;1;-1;1;-1;1];                       % gleich wie im Original
+    Stab(i).u_glob = u_glob; Stab(i).u_loc = u_loc;
+    Stab(i).q_loc  = q_loc;  Stab(i).q_glob = q_glob;
+    Stab(i).q_loc_sk = q_loc .* [-1;1;-1;1;-1;1];
 end
 
-% Optional: Verdrehungen an Momentengelenken korrigieren (wie Original)
-for i = 1:Info.nStaebe
-    if isfield(ele(i),'u_loc') && ~isempty(ele(i).u_loc)
-        ele(i).u_loc = VerdrehungMomentengelenk(ele(i).u_loc, ele(i).L, Stab(i).vorhandeneDOF); % existing
+% Verdrehungen an Momentengelenken korrigieren (wie Original)
+for i = 1:numel(Stab)
+    if isfield(Stab(i),'u_loc') && ~isempty(Stab(i).u_loc)
+        Stab(i).u_loc = VerdrehungMomentengelenk(Stab(i).u_loc, Stab(i).L, Stab(i).vorhandeneDOF);
     end
 end
 end

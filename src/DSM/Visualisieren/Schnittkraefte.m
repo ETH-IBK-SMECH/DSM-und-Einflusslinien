@@ -1,4 +1,4 @@
-function [out] = Schnittkraefte(analyseModel)
+function out = Schnittkraefte(analyseModel)
 
 %welche fields verwendet werden 
 %mau do ineschriibe mit Stab = analyseModel.Stab etc

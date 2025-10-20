@@ -61,6 +61,13 @@ out = aM; %damit das alte nicht verloren geht und wir nur das nötige ändern k�
     out.SPC     = SPC;
     out.Einflusslinie = Einflusslinie;
 
+%% sicherstellen dass alles existiert
+    if ~isfield(out,'Teilsystem'), out.Teilsystem = []; end
+    if ~isfield(out,'Feder'),      out.Feder      = []; end
+    if ~isfield(out,'KnotenLast'), out.KnotenLast = []; end
+    if ~isfield(out,'StabLast'),   out.StabLast   = []; end
+
+
 
 end
 

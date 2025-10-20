@@ -1,36 +1,61 @@
-function ele = elementeErzeugen(model)
-% [Schritt 1] Stabeigenschaften, lokale Steifigkeit (inkl. Freigaben), Elementlastvektor (leer)
-[Knoten, Stab, ~, ~, ~, ~, ~, Info] = extractFields(model);
+function model = elementeErzeugen(model)
+% [Schritt 1] Pro Stab: Geometrie, lokale Steifigkeit (inkl. Releases), Init Last-/Hilfsfelder
 
-nkd = Info.nKnotenDOF; n6 = 2*nkd;
-ele = struct('L',[],'c',[],'s',[],'R',[],'k_loc_v',[],'k_loc',[],'k_glob',[],'P_int',[]);
+[Knoten, Stab, ~, ~, ~, ~, ~, Info] = extractFields(model);
+nkd = Info.nKnotenDOF;           % DOF pro Knoten
+n6  = 2*nkd;                     % Element-DOF
 
 for i = 1:Info.nStaebe
-    sN = Stab(i).sNode; eN = Stab(i).eNode;
-    sX = Knoten(sN).x;  eX = Knoten(eN).x;
-    sY = Knoten(sN).y;  eY = Knoten(eN).y;
+    % --- Geometrie ---
+    % robust gegen unterschiedliche Feldnamen (sNode/eNode oder iKnoten/jKnoten)
+    if isfield(Stab(i),'sNode'), sN = Stab(i).sNode; else, sN = Stab(i).iKnoten; end
+    if isfield(Stab(i),'eNode'), eN = Stab(i).eNode; else, eN = Stab(i).jKnoten; end
 
-    L = hypot(eX - sX, eY - sY);
-    c = (eX - sX)/L; s = (eY - sY)/L;
-    R = getR(c, s);          % existing function
+    sX = Knoten(sN).x;  sY = Knoten(sN).y;
+    eX = Knoten(eN).x;  eY = Knoten(eN).y;
 
-    k_loc_v = getK(Stab(i).E, Stab(i).A, Stab(i).Iy, L);  % existing function
+    dx = eX - sX; dy = eY - sY;
+    L  = hypot(dx, dy);
+    c  = dx / L; s = dy / L;
+    R  = getR(c, s);                % vorhandene Funktion (Transformationsmatrix)
 
-    % vorhandeneDOF aus Releases ableiten (wie im ursprünglichen Main)
-    vorhanden = true(1,n6);
+    % --- Lokale Steifigkeit (voll, vor Freigaben) ---
+    k_loc_v = getK(Stab(i).E, Stab(i).A, Stab(i).Iy, L);  % vorhandene Funktion
+
+    % --- Releases → vorhandene DOF bestimmen & kondensieren ---
+    vorhanden = true(1, n6);
     if isfield(Stab(i),'sRelease') && ~isempty(Stab(i).sRelease)
-        vorhanden(Stab(i).sRelease) = false;
+        sel = Stab(i).sRelease(:)';               % Roh-Indizes an Knoten s
+        sel = sel(sel >= 1 & sel <= nkd);         % clamp
+        if ~isempty(sel), vorhanden(sel) = false; end
     end
     if isfield(Stab(i),'eRelease') && ~isempty(Stab(i).eRelease)
-        vorhanden(Stab(i).eRelease + nkd) = false;
+        sel = Stab(i).eRelease(:)';               % Roh-Indizes an Knoten e
+        sel = sel(sel >= 1 & sel <= nkd);
+        if ~isempty(sel), vorhanden(sel + nkd) = false; end
     end
-    % lokale Freigaben kondensieren
-    [k_loc, ~] = condensation(k_loc_v, [], vorhanden, 'preserve_size', true); % existing
 
-    ele(i).L = L; ele(i).c = c; ele(i).s = s; ele(i).R = R;
-    ele(i).k_loc_v = k_loc_v;
-    ele(i).k_loc   = k_loc;
-    ele(i).k_glob  = [];                % in lokaleNachGlobal()
-    ele(i).P_int   = zeros(n6,1);       % wird bei Lastassemblierung gefüllt
+    % lokale Freigaben kondensieren (Dimension erhalten, Nullen auf gesperrten DOF)
+    [k_loc, ~] = condensation(k_loc_v, [], vorhanden, 'preserve_size', true);
+
+    % --- Felder schreiben ---
+    Stab(i).L       = L;
+    Stab(i).cs      = c;                 % konsistent benennen: cs/sn
+    Stab(i).sn      = s;
+    Stab(i).phi     = atan2(dy, dx);     % optional, oft praktisch
+    Stab(i).R       = R;
+
+    Stab(i).k_loc_v = k_loc_v;           % "voll" (vor Freigaben)
+    Stab(i).k_loc   = k_loc;             % "effektiv" (nach Freigaben)
+    Stab(i).k_glob  = [];                % wird in lokaleNachGlobal() gesetzt
+
+    % Initialisierungen für Folge-Schritte
+    Stab(i).P_int  = zeros(n6,1);     % interne Elementlast 
+    Stab(i).u_loc      = [];              % lokaler Verschiebungsvektor
+    Stab(i).q_loc      = [];              % lokaler Endkraftvektor
+    Stab(i).q_glob   = [];
 end
+
+% zurückschreiben
+model.Stab = Stab;
 end

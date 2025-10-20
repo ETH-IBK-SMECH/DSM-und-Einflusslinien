@@ -1,12 +1,12 @@
-function [out] = ZusammenSetzen(analyseModel)
+function out = ZusammenSetzen(analyseModel)
 
 gew_output = analyseModel.gew_output; % 1:Schnittkräfte, 2:Einflusslinie
 
 
    if gew_output == 1 || gew_output == 3
-       [out] = Schnittkraefte([analyseModel]);
+       out = Schnittkraefte(analyseModel);
    elseif gew_output == 2
-       [out] = Verformungslinie([analyseModel]);
+       out = Verformungslinie(analyseModel);
    end
 
 
