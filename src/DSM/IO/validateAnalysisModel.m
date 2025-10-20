@@ -1,140 +1,145 @@
-function [ok, issues] = validateAnalysisModel(A)
-% Purpose: structural input is *self-consistent* and numerically usable.
-% No mutation; only checks.
+function [ok, issues] = validateAnalysisModel(A, opts)
+% Validate (Analyse-Ebene)
+% Ziel: Strikte, modellweite Prüfung der Selbstkonsistenz; KEINE Mutationen.
+% Rückgabe:
+%   ok     : true, wenn keine ERRORs gefunden wurden
+%   issues : cellstr mit deutschsprachigen Fehlermeldungen
 
+    if nargin < 2, opts = struct(); end
     issues = {};
     tol = 1e-12;
 
-    % --- basic presence ---
-    for f = {'Knoten','Stab','SPC','Info'}
-        if ~isfield(A, f{1})
-            issues{end+1} = sprintf('Missing field A.%s.', f{1});
+    % ---- Grundstruktur vorhanden? ----
+    need = {'Knoten','Stab','SPC','Info'};
+    for k = 1:numel(need)
+        if ~isfield(A,need{k})
+            issues{end+1} = sprintf('ERROR: Feld A.%s fehlt.', need{k});
         end
     end
+    if ~isempty(issues), ok = false; return; end
 
-    % --- nDOF per node ---
-    if ~isfield(A,'Info') || ~isfield(A.Info,'nKnotenDOF') ...
-            || ~isscalar(A.Info.nKnotenDOF) || ~isfinite(A.Info.nKnotenDOF)
-        issues{end+1} = 'Info.nKnotenDOF missing/invalid; expected finite scalar.';
-        nDOFperNode = 3; % continue with default for checking
+    % ---- DOF pro Knoten plausibel? ----
+    if ~isfield(A.Info,'nKnotenDOF') || ~isscalar(A.Info.nKnotenDOF) || ~isfinite(A.Info.nKnotenDOF)
+        issues{end+1} = 'ERROR: Info.nKnotenDOF ist ungültig (endlicher Skalar erwartet).';
+        ndof = 3; 
     else
-        nDOFperNode = A.Info.nKnotenDOF;
+        ndof = A.Info.nKnotenDOF;
     end
 
-    % --- counts ---
-    nKnoten = numel(getfield(A,'Knoten')); %#ok<GFLD>
-    nStab   = numel(getfield(A,'Stab'));
-
-    if nStab>0 && nKnoten<2
-        issues{end+1} = 'At least two nodes required when members are present.';
+    % ---- Knoten prüfen ----
+    nK = numel(A.Knoten);
+    if numel(A.Stab)>0 && nK < 2
+        issues{end+1} = 'ERROR: Mindestens zwei Knoten erforderlich, wenn Stäbe vorhanden sind.';
     end
-    if ~isfield(A,'SPC') || isempty(A.SPC)
-        issues{end+1} = 'No supports (SPC) defined; system may be a mechanism.';
-    end
-
-    % --- nodes ---
-    for i=1:nKnoten
+    for i = 1:nK
         if ~isfield(A.Knoten(i),'x') || ~isfield(A.Knoten(i),'y') ...
            || ~isscalar(A.Knoten(i).x) || ~isscalar(A.Knoten(i).y) ...
            || ~isfinite(A.Knoten(i).x) || ~isfinite(A.Knoten(i).y)
-            issues{end+1} = sprintf('Node %d has invalid coordinates.', i);
+            issues{end+1} = sprintf('ERROR: Knoten %d hat ungültige Koordinaten.', i);
         end
     end
 
-    % --- members ---
-    for i=1:nStab
-        if ~isfield(A.Stab(i),'sNode') || ~isfield(A.Stab(i),'eNode') ...
-           || ~isfinite(A.Stab(i).sNode) || ~isfinite(A.Stab(i).eNode)
-            issues{end+1} = sprintf('Member %d: missing/invalid sNode/eNode.', i);
+    % ---- Stäbe prüfen ----
+    for i = 1:numel(A.Stab)
+        s = A.Stab(i);
+        req = {'sNode','eNode','E','A','Iy'};
+        for r = 1:numel(req)
+            if ~isfield(s,req{r})
+                issues{end+1} = sprintf('ERROR: Stab(%d): Feld "%s" fehlt.', i, req{r});
+            end
+        end
+        if ~isfield(s,'sNode') || ~isfield(s,'eNode') || ~isfinite(s.sNode) || ~isfinite(s.eNode)
+            issues{end+1} = sprintf('ERROR: Stab(%d): sNode/eNode fehlen oder sind ungültig.', i);
             continue;
         end
-        s = A.Stab(i).sNode; e = A.Stab(i).eNode;
-        if ~(s>=1 && s<=nKnoten) || ~(e>=1 && e<=nKnoten)
-            issues{end+1} = sprintf('Member %d: sNode/eNode out of range.', i);
-        elseif s == e
-            issues{end+1} = sprintf('Member %d: identical start and end node.', i);
+        if ~(s.sNode>=1 && s.sNode<=nK) || ~(s.eNode>=1 && s.eNode<=nK)
+            issues{end+1} = sprintf('ERROR: Stab(%d): sNode/eNode außerhalb des gültigen Bereichs.', i);
+        elseif s.sNode == s.eNode
+            issues{end+1} = sprintf('ERROR: Stab(%d): Start- und Endknoten sind identisch.', i);
         else
-            L = hypot(A.Knoten(e).x - A.Knoten(s).x, A.Knoten(e).y - A.Knoten(s).y);
+            L = hypot(A.Knoten(s.eNode).x - A.Knoten(s.sNode).x, ...
+                      A.Knoten(s.eNode).y - A.Knoten(s.sNode).y);
             if ~isfinite(L) || L < tol
-                issues{end+1} = sprintf('Member %d has near-zero length.', i);
+                issues{end+1} = sprintf('ERROR: Stab(%d) besitzt (nahezu) Null-Länge.', i);
             end
         end
-        for prop = {'E','A','Iy'}
-            if ~isfield(A.Stab(i),prop{1}) || ~isfinite(A.Stab(i).(prop{1})) || ~(A.Stab(i).(prop{1})>0)
-                issues{end+1} = sprintf('Member %d: %s must be > 0.', i, prop{1});
-            end
-        end
-        % release indices
+        % Material/Geometrie > 0
+        if ~isfield(s,'E')  || ~isfinite(s.E)  || ~(s.E  > 0), issues{end+1} = sprintf('ERROR: Stab(%d): E muss > 0 sein.',  i); end
+        if ~isfield(s,'A')  || ~isfinite(s.A)  || ~(s.A  > 0), issues{end+1} = sprintf('ERROR: Stab(%d): A muss > 0 sein.',  i); end
+        if ~isfield(s,'Iy') || ~isfinite(s.Iy) || ~(s.Iy > 0), issues{end+1} = sprintf('ERROR: Stab(%d): Iy muss > 0 sein.', i); end
+        % Releases: nur gültige DOF-Indizes 1..ndof zulässig
         for relf = {'sRelease','eRelease'}
-            if isfield(A.Stab(i), relf{1}) && ~isempty(A.Stab(i).(relf{1}))
-                bad = A.Stab(i).(relf{1})( ~ismember(A.Stab(i).(relf{1}), 1:nDOFperNode) );
+            if isfield(s,relf{1}) && ~isempty(s.(relf{1}))
+                bad = s.(relf{1})( ~ismember(s.(relf{1}), 1:ndof) );
                 if ~isempty(bad)
-                    issues{end+1} = sprintf('Member %d: %s contains invalid DOF index.', i, relf{1});
+                    issues{end+1} = sprintf('ERROR: Stab(%d): %s enthält ungültige DOF-Indizes.', i, relf{1});
                 end
             end
         end
     end
 
-    % --- springs ---
-    if isfield(A,'Feder')
-        for i = 1:numel(A.Feder)
-            if ~isfield(A.Feder(i),'node') || ~isfinite(A.Feder(i).node) || ~(A.Feder(i).node>=1 && A.Feder(i).node<=nKnoten)
-                issues{end+1} = sprintf('Spring %d: invalid node index.', i);
-            end
-            if ~isfield(A.Feder(i),'val') || ~isfinite(A.Feder(i).val) || ~(A.Feder(i).val>=0)
-                issues{end+1} = sprintf('Spring %d: stiffness val must be >= 0.', i);
-            end
-            % dir==0 means "ignored" (from sanitize); only check when nonzero
-            if isfield(A.Feder(i),'dir') && A.Feder(i).dir~=0 ...
-               && ~ismember(A.Feder(i).dir, 1:nDOFperNode)
-                issues{end+1} = sprintf('Spring %d: dir must be 1..%d.', i, nDOFperNode);
-            end
+    % ---- Lager (SPC) prüfen ----
+    if isempty(A.SPC)
+        issues{end+1} = 'ERROR: Keine Lager (SPC) definiert – System vermutlich kinematisch.';
+    end
+    for i = 1:numel(A.SPC)
+        C = A.SPC(i);
+        if ~isfield(C,'node') || ~isfinite(C.node) || ~(C.node>=1 && C.node<=nK)
+            issues{end+1} = sprintf('ERROR: SPC %d: Knotenindex ungültig.', i);
+        end
+        if ~isfield(C,'dir') || ~isscalar(C.dir) || ~ismember(C.dir, 1:ndof)
+            issues{end+1} = sprintf('ERROR: SPC %d: dir muss in 1..%d liegen.', i, ndof);
+        end
+        if ~isfield(C,'val') || ~isfinite(C.val)
+            issues{end+1} = sprintf('ERROR: SPC %d: val fehlt/ungültig.', i);
         end
     end
 
-
-    % --- node loads ---
-    if isfield(A,'KnotenLast')
-        for i = 1:numel(A.KnotenLast)
-            if ~isfield(A.KnotenLast(i),'node') || ~isfinite(A.KnotenLast(i).node) || ~(A.KnotenLast(i).node>=1 && A.KnotenLast(i).node<=nKnoten)
-                issues{end+1} = sprintf('Node load %d: node index out of range.', i);
-            end
-            % dir==0 is "ignored"; only check when nonzero
-            if ~isfield(A.KnotenLast(i),'dir') || ~(isscalar(A.KnotenLast(i).dir))
-                issues{end+1} = sprintf('Node load %d: dir missing/invalid.', i);
-            elseif A.KnotenLast(i).dir~=0 && ~ismember(A.KnotenLast(i).dir, 1:nDOFperNode)
-                issues{end+1} = sprintf('Node load %d: dir must be 1..%d.', i, nDOFperNode);
-            end
-            if ~isfield(A.KnotenLast(i),'val') || ~isfinite(A.KnotenLast(i).val)
-                issues{end+1} = sprintf('Node load %d: val missing/invalid.', i);
-            end
+    % ---- Federn prüfen ----
+    for i = 1:numel(A.Feder)
+        S = A.Feder(i);
+        if ~isfield(S,'node') || ~isfinite(S.node) || ~(S.node>=1 && S.node<=nK)
+            issues{end+1} = sprintf('ERROR: Feder %d: Knotenindex ungültig.', i);
+        end
+        if ~isfield(S,'dir') || ~isscalar(S.dir) || ~ismember(S.dir, 1:ndof)
+            issues{end+1} = sprintf('ERROR: Feder %d: dir muss in 1..%d liegen.', i, ndof);
+        end
+        if ~isfield(S,'val') || ~isfinite(S.val) || ~(S.val>=0)
+            issues{end+1} = sprintf('ERROR: Feder %d: Steifigkeit val muss ≥ 0 sein.', i);
         end
     end
 
-    % --- member loads (minimal schema) ---
-    if isfield(A,'StabLast')
-        for i = 1:numel(A.StabLast)
-            if ~isfield(A.StabLast(i),'stab') || ~isfinite(A.StabLast(i).stab) || ~(A.StabLast(i).stab>=1 && A.StabLast(i).stab<=nStab)
-                issues{end+1} = sprintf('Member load %d: invalid member index.', i);
-            end
-            if ~isfield(A.StabLast(i),'typ') || ~ismember(A.StabLast(i).typ, [1 2 3 4 5 6])
-                issues{end+1} = sprintf('Member load %d: unknown typ.', i);
-            end
+    % ---- Knotenlasten prüfen ----
+    for i = 1:numel(A.KnotenLast)
+        L = A.KnotenLast(i);
+        if ~isfield(L,'node') || ~isfinite(L.node) || ~(L.node>=1 && L.node<=nK)
+            issues{end+1} = sprintf('ERROR: Knotenlast %d: Knotenindex ungültig.', i);
+        end
+        if ~isfield(L,'dir') || ~isscalar(L.dir) || ~ismember(L.dir, 1:ndof)
+            issues{end+1} = sprintf('ERROR: Knotenlast %d: dir muss in 1..%d liegen.', i, ndof);
+        end
+        if ~isfield(L,'val') || ~isfinite(L.val)
+            issues{end+1} = sprintf('ERROR: Knotenlast %d: val fehlt/ungültig.', i);
         end
     end
 
-    % --- SPCs ---
-    if isfield(A,'SPC')
-        for i = 1:numel(A.SPC)
-            if ~isfield(A.SPC(i),'node') || ~isfinite(A.SPC(i).node) || ~(A.SPC(i).node>=1 && A.SPC(i).node<=nKnoten)
-                issues{end+1} = sprintf('SPC %d: invalid node index.', i);
-            end
-            if ~isfield(A.SPC(i),'dir') || ~isscalar(A.SPC(i).dir) || ~ismember(A.SPC(i).dir, 1:nDOFperNode)
-                issues{end+1} = sprintf('SPC %d: dir must be 1..%d.', i, nDOFperNode);
-            end
-            if ~isfield(A.SPC(i),'val') || ~isfinite(A.SPC(i).val)
-                issues{end+1} = sprintf('SPC %d: val missing/invalid.', i);
-            end
+    % ---- Stablasten prüfen (Minimalregeln) ----
+    allowedTyp = [1 2 3 4 5 6];
+    for i = 1:numel(A.StabLast)
+        SL = A.StabLast(i);
+        if ~isfield(SL,'stab') || ~isfinite(SL.stab) || ~(SL.stab>=1 && SL.stab<=numel(A.Stab))
+            issues{end+1} = sprintf('ERROR: Stablast %d: Stabindex ungültig.', i);
+        end
+        if ~isfield(SL,'typ') || ~ismember(SL.typ, allowedTyp)
+            issues{end+1} = sprintf('ERROR: Stablast %d: unbekannter Typ (erlaubt: [%s]).', ...
+                i, sprintf('%d ', allowedTyp));
+        end
+        % Optional: sDist/eDist in [0,1] (falls als Längenanteil definiert)
+        if isfield(SL,'sDist') && ~isempty(SL.sDist) && (~isfinite(SL.sDist) || SL.sDist<0 || SL.sDist>1)
+            issues{end+1} = sprintf('ERROR: Stablast %d: sDist muss in [0,1] liegen.', i);
+        end
+        if isfield(SL,'eDist') && ~isempty(SL.eDist) && (~isfinite(SL.eDist) || SL.eDist<0 || SL.eDist>1)
+            issues{end+1} = sprintf('ERROR: Stablast %d: eDist muss in [0,1] liegen.', i);
         end
     end
 

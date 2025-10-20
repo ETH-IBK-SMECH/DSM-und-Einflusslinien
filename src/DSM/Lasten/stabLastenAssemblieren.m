@@ -1,5 +1,5 @@
-function [F_stab_sys, F_TS_add, Stab] = stabLastenAssemblieren(DOF, nDOF, model)
-% [Schritt 3] System-Elementlastvektor (inkl. Teilsystem-Beiträge)
+function [F_stab_sys, F_TS_add, Stab] = stabLastenAssemblieren(model, DOF, nDOF)
+% System-Elementlastvektor (inkl. Teilsystem-Beiträge)
 [~, Stab, Teilsystem, ~, ~, StabLast, ~, Info, ~, ~] = extractFields(model);
 F_stab_sys = sparse(nDOF,1);
 F_TS_add   = sparse(nDOF,1);
@@ -13,10 +13,10 @@ for i = 1:numel(StabLast)
     sIdx = StabLast(i).stab;
     if sIdx < 1 || sIdx > numel(Stab), continue; end
     if isfield(Stab,'inTeilSys') && ~isempty(Stab) && Stab(sIdx).inTeilSys
-        continue; % skip TS members here; they're handled in the TS block
+        continue; % TS Stäbe überspringen
     end
 
-    % LOCAL fixed-end vector
+    % Berechnet lokale Kraftvektor
     f_loc = getF(StabLast(i), Stab(sIdx).L);
     [~, f_loc] = condensation(Stab(sIdx).k_loc_v, f_loc, Stab(sIdx).vorhandeneDOF, 'preserve_size', true);
     if ~isfield(Stab(sIdx),'P_int') || isempty(Stab(sIdx).P_int)
@@ -24,7 +24,7 @@ for i = 1:numel(StabLast)
     end
     Stab(sIdx).P_int = Stab(sIdx).P_int + f_loc;
 
-    % System contribution (global)
+    % globaler Kraftvektor berechnen
     f_glob = rotiereLocalToGlobal_F(f_loc, Stab(sIdx).R);
     d    = Stab(sIdx).dof_e;                       % 1×(2*nkd)
     mask = (d~=0) & Stab(sIdx).activeStabDOF(:)';  % 1×(2*nkd)
@@ -33,14 +33,13 @@ for i = 1:numel(StabLast)
     end
 end
 
-% Teilsysteme (pure): build F_TS on TS frame, condense, scatter
+% Teilsysteme : build F_TS aufbauen und kondensieren
 for t = 1:Info.nTeilsys
     TS = Teilsystem(t);
     if ~isfield(TS,'KnotenTSgeordnet') || numel(TS.KnotenTSgeordnet) < 2, continue; end
     KnotenTS = TS.KnotenTSgeordnet;  nTSNodes = numel(KnotenTS);
     F_TS = zeros(nTSNodes*nkd, 1);
 
-    % member loads that belong to this TS
     staebeTS = TS.BeteiligteStaebe;
     for j = 1:Info.nStabLasten
         idx = StabLast(j).stab;
@@ -61,7 +60,7 @@ for t = 1:Info.nTeilsys
         end
     end
 
-    % node loads without global DOF → collect into TS
+    % Knotenkräfte ohne globale DOF → in TS sammeln
     for z=1:Info.nKnotenLasten
         Lz = model.KnotenLast(z);
         localIdx = (Lz.node-1)*nkd + Lz.dir;
@@ -75,10 +74,9 @@ for t = 1:Info.nTeilsys
         end
     end
 
-    % condense TS force to externals
+    % TS Kondensieren
     [~, F_TS_kond, activeTS] = tsAssembleAndCondense(TS, Stab, nkd, F_TS);
 
-    % global external DOFs (first/last TS node)
     sNodeTS = KnotenTS(1);
     eNodeTS = KnotenTS(end);
     loc6 = [(sNodeTS - 1)*nkd + (1:nkd), (eNodeTS - 1)*nkd + (1:nkd)];

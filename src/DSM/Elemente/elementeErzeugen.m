@@ -1,5 +1,5 @@
 function model = elementeErzeugen(model)
-% [Schritt 1] Pro Stab: Geometrie, lokale Steifigkeit (inkl. Releases), Init Last-/Hilfsfelder
+% Pro Stab: Geometrie, lokale Steifigkeit (inkl. Releases), Init Last-/Hilfsfelder
 
 [Knoten, Stab, ~, ~, ~, ~, ~, Info] = extractFields(model);
 nkd = Info.nKnotenDOF;           % DOF pro Knoten
@@ -17,10 +17,10 @@ for i = 1:Info.nStaebe
     dx = eX - sX; dy = eY - sY;
     L  = hypot(dx, dy);
     c  = dx / L; s = dy / L;
-    R  = getR(c, s);                % vorhandene Funktion (Transformationsmatrix)
+    R  = getR(c, s);                % Transformationsmatrix
 
     % --- Lokale Steifigkeit (voll, vor Freigaben) ---
-    k_loc_v = getK(Stab(i).E, Stab(i).A, Stab(i).Iy, L);  % vorhandene Funktion
+    k_loc_v = getK(Stab(i).E, Stab(i).A, Stab(i).Iy, L); 
 
     % --- Releases → vorhandene DOF bestimmen & kondensieren ---
     vorhanden = true(1, n6);
@@ -40,14 +40,14 @@ for i = 1:Info.nStaebe
 
     % --- Felder schreiben ---
     Stab(i).L       = L;
-    Stab(i).cs      = c;                 % konsistent benennen: cs/sn
+    Stab(i).cs      = c;                 
     Stab(i).sn      = s;
-    Stab(i).phi     = atan2(dy, dx);     % optional, oft praktisch
+    Stab(i).phi     = atan2(dy, dx);     
     Stab(i).R       = R;
 
     Stab(i).k_loc_v = k_loc_v;           % "voll" (vor Freigaben)
-    Stab(i).k_loc   = k_loc;             % "effektiv" (nach Freigaben)
-    Stab(i).k_glob  = [];                % wird in lokaleNachGlobal() gesetzt
+    Stab(i).k_loc   = k_loc;             % (nach Freigaben)
+    Stab(i).k_glob  = [];               
 
     % Initialisierungen für Folge-Schritte
     Stab(i).P_int  = zeros(n6,1);     % interne Elementlast 

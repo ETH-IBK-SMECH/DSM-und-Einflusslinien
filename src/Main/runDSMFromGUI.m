@@ -1,4 +1,6 @@
 function [Model, status, msgs, warns] = runDSMFromGUI(gui, outputType)
+
+%% TODO
     msgs = {}; warns = {};
     % 1) GUI sanitize + validate (fast, field-level)
     guiNorm = sanitizeGuiModel(gui);

@@ -1,5 +1,5 @@
 function [Reactions, SPCout, FederOut] = auflagerreaktionenBerechnen(K_sys, U_sys, F_N, P_int, SPC, Feder, DOF, nkd)
-% [Schritt 9] Auflagerreaktionen: R = K*U - (F_N - P_int) (physikalische DOF)
+% Auflagerreaktionen: R = K*U - (F_N - P_int) (physikalische DOF)
 nDOF = numel(U_sys);
 R_sys = K_sys * U_sys - (F_N - P_int);
 Reactions = zeros(nDOF,1);

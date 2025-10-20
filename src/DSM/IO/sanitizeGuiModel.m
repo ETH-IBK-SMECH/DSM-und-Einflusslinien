@@ -1,4 +1,4 @@
 function guiOut = sanitizeGuiModel(guiIn)
-% minimal pass-through (adjust later)
+% TODO
 guiOut = guiIn;
 end

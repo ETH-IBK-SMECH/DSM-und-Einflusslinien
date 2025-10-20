@@ -1,5 +1,6 @@
-function K_sys = systemSteifigkeitAssemblieren(DOF, nDOF, model)
-% [Schritt 5] Systemsteifigkeitsmatrix aufbauen (freie Stäbe + Teilsysteme)
+function K_sys = systemSteifigkeitAssemblieren(model, DOF, nDOF)
+% Systemsteifigkeitsmatrix aufbauen (freie Stäbe + Teilsysteme)
+
 [~, Stab, Teilsystem, ~, ~, ~, ~, Info] = extractFields(model);
 K_sys = sparse(nDOF, nDOF);
 nkd = Info.nKnotenDOF;

@@ -1,5 +1,5 @@
 function A = guiToAnalysis(G)
-% Map GUI struct to the analysis struct expected by extractFields()
+% TODO
 
 A.Knoten = arrayfun(@(n) struct('x', n.x, 'y', n.y), G.Nodes);
 A.Stab   = arrayfun(@(m) struct( ...
@@ -18,6 +18,5 @@ A.StabLast = arrayfun(@(q) struct( ...
     'stab', q.member, 'typ', q.type, 'val', q.val, 'x', q.xSpan ...
 ), G.MemberLoads);
 
-A.Info.nKnotenDOF = 3;    % keep your constants here
-% (add any other small fields your extractFields/DSM expects)
+A.Info.nKnotenDOF = 3;    
 end

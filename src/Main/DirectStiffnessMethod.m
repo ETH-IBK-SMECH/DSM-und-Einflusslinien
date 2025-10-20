@@ -4,7 +4,7 @@ function out = DirectStiffnessMethod(model)
 
 % 1) Stabeigenschaften → Stabsteifigkeitsmatrix → Elementlastvektor
 model = elementeErzeugen(model);                % lokale Steifigkeiten, Freigaben, Geometrie
-model.Stab = lokaleNachGlobal(model.Stab);                  % Rotation zu globalen Koordinaten
+model.Stab = lokalZuGlobal(model.Stab);                  % Rotation zu globalen Koordinaten
 
 [DOF, nDOF, model] = dofNummerieren(model); % DOF-Nummerierung 
 
@@ -12,13 +12,13 @@ model.Stab = lokaleNachGlobal(model.Stab);                  % Rotation zu global
 F_sys_Knoten = knotenLastenAssemblieren(model, DOF, nDOF);
 
 % 3) System-Elementlastvektor
-[F_sys_Stab, F_sys_TS, model.Stab] = stabLastenAssemblieren(DOF, nDOF, model);
+[F_sys_Stab, F_sys_TS, model.Stab] = stabLastenAssemblieren(model, DOF, nDOF);
 
 % 4) Systemlastvektor
 F_sys = F_sys_Knoten - F_sys_Stab + F_sys_TS;
 
 % 5) Systemsteifigkeitsmatrix
-K_sys = systemSteifigkeitAssemblieren(DOF, nDOF, model);
+K_sys = systemSteifigkeitAssemblieren(model, DOF, nDOF);
 
 % 6) Federn
 K_sys = federnHinzufuegen(K_sys, model.Feder, DOF, nDOF, model.Info.nKnotenDOF);

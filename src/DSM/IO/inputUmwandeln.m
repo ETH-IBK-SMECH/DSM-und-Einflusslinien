@@ -51,15 +51,23 @@ function [out] = inputUmwandeln(in)
       %Teilsysteme (d.h. etwaige zusammengesetzte Stäbe)
       
       nTeilSys = out.Info.nTeilsys;
-      out.Teilsystem = struct();
-      for i=1:nTeilSys
-         out.Teilsystem(i).BeteiligteStaebe = cell2mat(in.Teilsysteme(i)); 
+      out.Teilsystem  = struct('BeteiligteStaebe',{},'KnotenDesTS',{},'KnotenTSgeordnet',{});
+      for i = 1:nTeilSys
+          row = in.Teilsysteme(i,:);               % verträgt Table oder Cell
+          if istable(in.Teilsysteme)
+              vals = row{1,1};                     % Zelleninhalt aus der einzigen Spalte
+          else
+              vals = row{1};                        % 1x1 Cell → Inhalt
+          end
+          if iscell(vals), vals = cell2mat(vals); end
+          out.Teilsystem(i).BeteiligteStaebe = vals(:)';   % Zeilenvektor
+          out.Teilsystem(i).KnotenDesTS      = [];
+          out.Teilsystem(i).KnotenTSgeordnet = [];
       end
-      
 
       %Federn
       nFedern = out.Info.nFedern;
-      out.Feder = struct();
+      out.Feder = struct('node',{},'dir',{},'val',{});
       for i=1:nFedern
          out.Feder(i).node = in.Feder.Knoten(i);
          out.Feder(i).dir = in.Feder.Feder(i);
@@ -67,84 +75,83 @@ function [out] = inputUmwandeln(in)
          out.Feder(i).val  = in.Feder.Betrag(i); 
       end
 
-      
    %U --> Randbedingunen (Lager und vorgeschriebene Verschiebungen)
       %Randbedinungen die nur einen DOF betreffen (SPC=single-point constraint)
-      nLager = out.Info.nLager;
-      out.SPC = struct();
-      nSPC = 0; %SÖTT 0 SI ODER? ODER DOCH 1?
-      %nSPC = 1 ;
-      for i=1:nLager
-         switch find(in.Lager.Lagerung(i,:))
-            case 1 %voll eingespannt
-               nSPC = nSPC + 3;
-             case {2,5,6} %gelenkig gelagert, verschieblich eingespannt
-               nSPC = nSPC + 2;
-            case {3,4} %Rolllager
-               nSPC = nSPC + 1;
-         end         
+      out.SPC = struct('node',{},'dir',{},'val',{});
+      nSPC = 0;
+      for i = 1:out.Info.nLager
+          flags = in.Lager.Lagerung(i,:);
+          if iscell(flags), flags = flags{1}; end
+          flags = logical(flags);
+          t = find(flags, 1, 'first');          % one-hot index 1..6 (or [])
+          switch t
+              case 1 % voll eingespannt
+                  nSPC = nSPC + 3;
+              case 2 % gelenkig
+                  nSPC = nSPC + 2;
+              case 3 % Rolllager, gehalten in y
+                  nSPC = nSPC + 1;
+              case 4 % Rolllager, gehalten in x
+                  nSPC = nSPC + 1;
+              case 5 % Gleitlager, gehalten in y
+                  nSPC = nSPC + 2;
+              case 6 % Gleitlager, gehalten in x
+                  nSPC = nSPC + 2;
+              otherwise
+                  % no/invalid type -> zero added; validator will complain later
+          end
       end
-      out.SPC(nSPC).node = [];
-      out.SPC(nSPC).dir  = [];
-      out.SPC(nSPC).val  = [];   
-      
-      Idx = 1 ;
-      for i=1:nLager
-         switch find(in.Lager.Lagerung(i,:))
-             case 1 %voll eingespannt
-                 out.SPC(Idx  ).node = in.Lager.Knoten(i);
-                 out.SPC(Idx+1).node = in.Lager.Knoten(i);
-                 out.SPC(Idx+2).node = in.Lager.Knoten(i);
-                 out.SPC(Idx  ).dir  = 1; 
-                 out.SPC(Idx+1).dir  = 2;
-                 out.SPC(Idx+2).dir  = 3;
-                 out.SPC(Idx  ).val  = 0;
-                 out.SPC(Idx+1).val  = 0;
-                 out.SPC(Idx+2).val  = 0;
-                 Idx = Idx + 3;
-             case 2 %gelenkig gelagert
-                 out.SPC(Idx  ).node = in.Lager.Knoten(i);
-                 out.SPC(Idx+1).node = in.Lager.Knoten(i);
-                 out.SPC(Idx  ).dir  = 1; 
-                 out.SPC(Idx+1).dir  = 2;
-                 out.SPC(Idx  ).val  = 0;
-                 out.SPC(Idx+1).val  = 0;
-                 Idx = Idx + 2;
-             case 3 %Rolllager, gehalten in y
-                 out.SPC(Idx).node = in.Lager.Knoten(i);
-                 out.SPC(Idx).dir  = 2;
-                 out.SPC(Idx).val  = 0;
-                 Idx = Idx + 1;
-             case 4 %Rolllager, gehalten in x
-                 out.SPC(Idx).node = in.Lager.Knoten(i);
-                 out.SPC(Idx).dir  = 1;
-                 out.SPC(Idx).val  = 0;
-                 Idx = Idx + 1;
-             case 5 %Gleitlager, gehalten in y
-                 out.SPC(Idx).node   = in.Lager.Knoten(i);
-                 out.SPC(Idx+1).node = in.Lager.Knoten(i);
-                 out.SPC(Idx).dir    = 2;
-                 out.SPC(Idx+1).dir  = 3;
-                 out.SPC(Idx).val    = 0;
-                 out.SPC(Idx+1).val  = 0;
-                 Idx = Idx + 2;
-             case 6 %Gleitlager, gehalten in x
-                 out.SPC(Idx).node   = in.Lager.Knoten(i);
-                 out.SPC(Idx+1).node = in.Lager.Knoten(i);
-                 out.SPC(Idx).dir    = 1;
-                 out.SPC(Idx+1).dir  = 3;
-                 out.SPC(Idx).val    = 0;
-                 out.SPC(Idx+1).val  = 0;
-                 Idx = Idx + 2;
-         end         
+      out.SPC(nSPC).node = []; out.SPC(nSPC).dir = []; out.SPC(nSPC).val = [];
+
+      Idx = 1;
+      for i = 1:out.Info.nLager
+          node  = in.Lager.Knoten(i);
+          flags = in.Lager.Lagerung(i,:);
+          if iscell(flags), flags = flags{1}; end
+          flags = logical(flags);
+          t = find(flags, 1, 'first');          % one-hot type
+    
+          switch t
+              case 1 % voll eingespannt -> 1,2,3
+                  out.SPC(Idx  ).node = node; out.SPC(Idx  ).dir = 1; out.SPC(Idx  ).val = 0;
+                  out.SPC(Idx+1).node = node; out.SPC(Idx+1).dir = 2; out.SPC(Idx+1).val = 0;
+                  out.SPC(Idx+2).node = node; out.SPC(Idx+2).dir = 3; out.SPC(Idx+2).val = 0;
+                  Idx = Idx + 3;
+    
+              case 2 % gelenkig -> 1,2
+                  out.SPC(Idx  ).node = node; out.SPC(Idx  ).dir = 1; out.SPC(Idx  ).val = 0;
+                  out.SPC(Idx+1).node = node; out.SPC(Idx+1).dir = 2; out.SPC(Idx+1).val = 0;
+                  Idx = Idx + 2;
+    
+              case 3 % Rollenlager, gehalten in y -> 2
+                  out.SPC(Idx).node = node; out.SPC(Idx).dir = 2; out.SPC(Idx).val = 0;
+                  Idx = Idx + 1;
+    
+              case 4 % Rollenlager, gehalten in x -> 1
+                  out.SPC(Idx).node = node; out.SPC(Idx).dir = 1; out.SPC(Idx).val = 0;
+                  Idx = Idx + 1;
+    
+              case 5 % Gleitlager, gehalten in y -> 2,3
+                  out.SPC(Idx  ).node = node; out.SPC(Idx  ).dir = 2; out.SPC(Idx  ).val = 0;
+                  out.SPC(Idx+1).node = node; out.SPC(Idx+1).dir = 3; out.SPC(Idx+1).val = 0;
+                  Idx = Idx + 2;
+    
+              case 6 % Gleitlager, gehalten in x -> 1,3
+                  out.SPC(Idx  ).node = node; out.SPC(Idx  ).dir = 1; out.SPC(Idx  ).val = 0;
+                  out.SPC(Idx+1).node = node; out.SPC(Idx+1).dir = 3; out.SPC(Idx+1).val = 0;
+                  Idx = Idx + 2;
+    
+              otherwise
+                % no/invalid type: skip (validation will flag it)
+          end
       end
-      
-      nZwaengungen = out.Info.nZwaengungen;
-      Idx = Idx - 1;
-      for i=1:nZwaengungen
-         out.SPC(Idx+i).node = in.VorgeschriebeneVerschiebung.Knoten(i);
-         out.SPC(Idx+i).dir  = in.VorgeschriebeneVerschiebung.Richtung(i);
-         out.SPC(Idx+i).val  = in.VorgeschriebeneVerschiebung.Wert(i);
+    
+      %Vorgeschriebene Verschiebungen anhängen
+      start = Idx - 1;
+      for i = 1:out.Info.nZwaengungen
+          out.SPC(start + i).node = in.VorgeschriebeneVerschiebung.Knoten(i);
+          out.SPC(start + i).dir  = in.VorgeschriebeneVerschiebung.Richtung(i);
+          out.SPC(start + i).val  = in.VorgeschriebeneVerschiebung.Wert(i);
       end
       
       %Randbedinungen die mehrere DOF betreffen (MPC=multi-point constraint)
@@ -152,7 +159,7 @@ function [out] = inputUmwandeln(in)
    
    %F --> Lasten
       %Knotenlasten
-      out.KnotenLast = struct();
+      out.KnotenLast = struct('node',{},'dir',{},'val',{});
       nKnotenLasten = out.Info.nKnotenLasten;
       for i=1:nKnotenLasten
          out.KnotenLast(i).node = in.KnotenLasten.Knoten(i); %Knoten auf dem die Kraft angreift
@@ -161,7 +168,7 @@ function [out] = inputUmwandeln(in)
       end
       
       %Stablasten
-      out.StabLast = struct();
+      out.StabLast = struct('stab',{},'dir',{},'val',{},'sDist',{},'eDist',{},'typ',{});
       nStabLastenKonzentriert = out.Info.nStabLastenKonzentriert;
       for i=1:nStabLastenKonzentriert
          out.StabLast(i).stab  = in.StabLasten_konzentriert.Stab(i);

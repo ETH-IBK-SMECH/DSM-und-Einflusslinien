@@ -1,5 +1,5 @@
 function kond = randbedingungenKondensieren(K_sys, F_sys, SPC, DOF, nDOF, nkd)
-% [Schritt 7] Statische Kondensation bei vorgegebenen Verschiebungen (SPC)
+% Statische Kondensation bei vorgegebenen Verschiebungen (SPC)
 isKnown = false(1,nDOF); U_s = zeros(nDOF,1);
 for i = 1:numel(SPC)
     localIdx = (SPC(i).node-1)*nkd + SPC(i).dir;

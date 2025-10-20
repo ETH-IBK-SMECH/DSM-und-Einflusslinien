@@ -1,5 +1,5 @@
 function F_N = knotenLastenAssemblieren(model, DOF, nDOF)
-% [Schritt 2] System-Knotenlastvektor
+% System-Knotenlastvektor
 F_N = sparse(nDOF,1);
 
 if ~isfield(model,'KnotenLast') || isempty(model.KnotenLast)

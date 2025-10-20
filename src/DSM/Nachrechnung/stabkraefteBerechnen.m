@@ -1,5 +1,5 @@
 function Stab = stabkraefteBerechnen(Stab, U_sys, nkd)
-% [Schritt 8] Stabendkräfte (lokal/global) berechnen
+% Stabendkräfte (lokal/global) berechnen
 n6 = 2*nkd;
 for i = 1:numel(Stab)
     d    = Stab(i).dof_e;                         % 1×(2*nkd)

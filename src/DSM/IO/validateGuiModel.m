@@ -1,4 +1,7 @@
 function [ok, issues] = validateGuiModel(gui)
+
+% TODO
+
 issues = {};
 if isempty(gui.Nodes), issues{end+1} = 'Define at least one node.'; end
 % minimal examples:
