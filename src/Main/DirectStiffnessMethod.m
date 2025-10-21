@@ -3,8 +3,7 @@ function out = DirectStiffnessMethod(model)
 % Analog aufgebaut zu den Schritten auf der DSM-Hilfstabelle
 
 % 1) Stabeigenschaften → Stabsteifigkeitsmatrix → Elementlastvektor
-model = elementeErzeugen(model);                % lokale Steifigkeiten, Freigaben, Geometrie
-model.Stab = lokalZuGlobal(model.Stab);                  % Rotation zu globalen Koordinaten
+model = elementeErzeugen(model);                % lokale & globale Steifigkeiten pro Stab, Freigaben, Geometrie
 
 [DOF, nDOF, model] = dofNummerieren(model); % DOF-Nummerierung 
 

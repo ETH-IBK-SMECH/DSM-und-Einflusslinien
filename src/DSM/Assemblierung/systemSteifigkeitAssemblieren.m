@@ -18,8 +18,8 @@ for k = 1:numel(idxFree)
     mask = (d ~= 0) & Stab(i).activeStabDOF(:)';% 1×(2*nkd)
     if ~any(mask), continue; end
 
-    Kb = Stab(i).k_glob(mask, mask);
-    dd = d(mask);
+    Ke = Stab(i).R.' * Stab(i).k_loc * Stab(i).R;   % globales Element K
+    dd = d(mask); Kb = Ke(mask, mask);
 
     [rr, cc] = ndgrid(dd, dd);
 
