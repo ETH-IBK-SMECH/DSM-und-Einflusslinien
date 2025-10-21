@@ -7,9 +7,8 @@ n6  = 2*nkd;                     % Element-DOF
 
 for i = 1:Info.nStaebe
     % --- Geometrie ---
-    % robust gegen unterschiedliche Feldnamen (sNode/eNode oder iKnoten/jKnoten)
-    if isfield(Stab(i),'sNode'), sN = Stab(i).sNode; else, sN = Stab(i).iKnoten; end
-    if isfield(Stab(i),'eNode'), eN = Stab(i).eNode; else, eN = Stab(i).jKnoten; end
+    sN = Stab(i).sNode;
+    eN = Stab(i).eNode;
 
     sX = Knoten(sN).x;  sY = Knoten(sN).y;
     eX = Knoten(eN).x;  eY = Knoten(eN).y;

@@ -16,7 +16,7 @@ for i = 1:numel(StabLast)
         continue; % TS Stäbe überspringen
     end
 
-    % Berechnet lokale Kraftvektor
+    % Berechnet lokaler Kraftvektor
     f_loc = getF(StabLast(i), Stab(sIdx).L);
     [~, f_loc] = condensation(Stab(sIdx).k_loc_v, f_loc, Stab(sIdx).vorhandeneDOF, 'preserve_size', true);
     if ~isfield(Stab(sIdx),'P_int') || isempty(Stab(sIdx).P_int)
