@@ -30,23 +30,45 @@ end
 isActive = false(1, Info.nKnoten * nkd);
 
 % Element aktivität markieren
-for i = 1:Info.nStaebe
-    g6 = Stab(i).loc6;
-    isActive(g6(Stab(i).activeStabDOF)) = true;
+if Info.nStaebe > 0
+    % Matrizen aufbauen: jede Zeile -> ein Stab, Spalten -> 2*nkd DOFs
+    loc6Mat  = vertcat(Stab.loc6);                 % [nStaebe x (2*nkd)]
+    maskMat  = vertcat(Stab.activeStabDOF);        % [nStaebe x (2*nkd)] logical
+
+    % Nur valide Einträge behalten (0 bedeutet inaktiv/ausserhalb)
+    valid    = loc6Mat > 0;
+    keepMat  = valid & maskMat;
+
+    if any(keepMat,'all')
+        idx = loc6Mat(keepMat);                    % Vektor aller aktiven globalen DOF
+        isActive(idx) = true;                      % einmalig setzen (OR)
+    end
 end
 
 % Federn
-for k = 1:Info.nFedern
-    if Feder(k).node>=1 && Feder(k).node<=nN && ismember(Feder(k).dir,1:nkd)
-        isActive((Feder(k).node-1)*nkd + Feder(k).dir) = true;
+if Info.nFedern > 0
+    nodes = [Feder.node]'; dirs = [Feder.dir]';
+    okNodes = nodes >= 1 & nodes <= Info.nKnoten;
+    okDirs  = dirs  >= 1 & dirs  <= nkd;
+    ok      = okNodes & okDirs;
+    if any(ok)
+        idxF = (nodes(ok) - 1) * nkd + dirs(ok);
+        isActive(idxF) = true;
     end
 end
+
 % Lagerbedingungen (SPC)
-for k=1:Info.nSPC
-    if SPC(k).node>=1 && SPC(k).node<=nN && ismember(SPC(k).dir,1:nkd)
-        isActive((SPC(k).node-1)*nkd + SPC(k).dir) = true;
+if Info.nSPC > 0
+    nodes = [SPC.node]'; dirs = [SPC.dir]';
+    okNodes = nodes >= 1 & nodes <= Info.nKnoten;
+    okDirs  = dirs  >= 1 & dirs  <= nkd;
+    ok      = okNodes & okDirs;
+    if any(ok)
+        idxS = (nodes(ok) - 1) * nkd + dirs(ok);
+        isActive(idxS) = true;
     end
 end
+
 
 % Nummerierung
 nDOF = sum(isActive);
@@ -54,8 +76,11 @@ DOF = zeros(1, numel(isActive)); DOF(isActive) = 1:nDOF;
 
 % globale liste der Elementen (0 wo inaktiv)
 for i=1:Info.nStaebe
-    g6 = arrayfun(@(idx) safeDOF(idx, DOF), Stab(i).loc6);
-    Stab(i).dof_e = g6;   % dimension 1×(2*nkd)
+    loc = Stab(i).loc6;
+    ok  = loc >= 1 & loc <= numel(DOF);
+    g6  = zeros(size(loc));
+    g6(ok) = DOF(loc(ok));
+    Stab(i).dof_e = g6;
 end
 
 model.Stab = Stab;
