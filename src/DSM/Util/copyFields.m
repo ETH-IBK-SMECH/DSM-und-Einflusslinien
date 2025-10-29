@@ -1,8 +1,7 @@
-function [out] = copyFields(Knoten, Stab, Teilsystem, Feder, KnotenLast, StabLast, SPC, Info, gew_output,...
-                            K_sys, F_sys, F_sys_Knoten, F_sys_Stab, kond, U_sys, DOF)
+function [out] = copyFields(Knoten, Stab, Feder, KnotenLast, StabLast, SPC, Info, gew_output,...
+                            K_sys, F_sys, F_sys_Knoten, F_sys_Stab, kond, U_sys, DOF, u_kept)
    out.Knoten       = Knoten;   
    out.Stab         = Stab; 
-   out.Teilsystem   = Teilsystem;
    out.Feder        = Feder; 
    out.KnotenLast   = KnotenLast; 
    out.StabLast     = StabLast; 
@@ -16,6 +15,7 @@ function [out] = copyFields(Knoten, Stab, Teilsystem, Feder, KnotenLast, StabLas
    out.U_sys        = U_sys; 
    out.kond         = kond;
    out.DOF          = DOF;
+   out.u_kept       = u_kept;
    
    %...
 end                         

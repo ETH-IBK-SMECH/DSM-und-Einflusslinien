@@ -11,7 +11,7 @@ nkd = model.Info.nKnotenDOF;
 
 KL = model.KnotenLast(:);
 node = [KL.node]'; 
-dir  = [KL.dir]'; 
+dir  = [KL.dir]';
 val = [KL.val]';
 
 local = (node-1)*nkd + dir;                 % vector

@@ -4,7 +4,6 @@ function [out] = inputUmwandeln(in)
     out.Info.nKnoten  = size(in.Knoten, 1);
     out.Info.nStaebe  = size(in.Staebe, 1);
     out.Info.nFedern  = size(in.Feder, 1);
-    out.Info.nTeilsys = size(in.Teilsysteme, 1);
     %U
     out.Info.nLager       = size(in.Lager, 1);
     out.Info.nZwaengungen = size(in.VorgeschriebeneVerschiebung, 1);
@@ -46,23 +45,6 @@ function [out] = inputUmwandeln(in)
          out.Stab(i).eRelease = in.Querschnitte.GelenkStabende(QsIdx);        %Stabendgelenk   (1=N; 2=V; 3=M)
          if out.Stab(i).sRelease == 0; out.Stab(i).sRelease = []; end         %Stabendgelenk (0=keines --> leer = [] )
          if out.Stab(i).eRelease == 0; out.Stab(i).eRelease = []; end         %Stabendgelenk (0=keines --> leer = [] )
-      end
-
-      %Teilsysteme (d.h. etwaige zusammengesetzte Stäbe)
-      
-      nTeilSys = out.Info.nTeilsys;
-      out.Teilsystem  = struct('BeteiligteStaebe',{},'KnotenDesTS',{},'KnotenTSgeordnet',{});
-      for i = 1:nTeilSys
-          row = in.Teilsysteme(i,:);               % verträgt Table oder Cell
-          if istable(in.Teilsysteme)
-              vals = row{1,1};                     % Zelleninhalt aus der einzigen Spalte
-          else
-              vals = row{1};                        % 1x1 Cell → Inhalt
-          end
-          if iscell(vals), vals = cell2mat(vals); end
-          out.Teilsystem(i).BeteiligteStaebe = vals(:)';   % Zeilenvektor
-          out.Teilsystem(i).KnotenDesTS      = [];
-          out.Teilsystem(i).KnotenTSgeordnet = [];
       end
 
       %Federn
@@ -201,6 +183,14 @@ function [out] = inputUmwandeln(in)
             out.Einflusslinie.Stelle = 0.999;
         end
     end
+
+    % Statische Kondensation (optional vom Benutzer)
+    if isfield(in,'Kondensation') && ~isempty(in.Kondensation)
+        out.Kondensation = in.Kondensation;   
+    else
+        out.Kondensation = [];
+    end
+
     
 
 end

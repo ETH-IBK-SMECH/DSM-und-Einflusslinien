@@ -143,5 +143,25 @@ function [ok, issues] = validateAnalysisModel(A, opts)
         end
     end
 
+    % ---- Kondensation prüfen ----
+    if isfield(A,'Kondensation') && ~isempty(A.Kondensation)
+        K = A.Kondensation;
+    
+        if ~isfield(K,'Knoten') || ~isvector(K.Knoten)
+            issues{end+1} = 'ERROR: Kondensation.Knoten muss ein Vektor mit Knoten-IDs sein.';
+        else
+            bad = K.Knoten(~ismember(K.Knoten, 1:numel(A.Knoten)));
+            if ~isempty(bad)
+                issues{end+1} = sprintf('ERROR: Kondensation.Knoten enthält ungültige Knoten-IDs: [%s].', num2str(bad));
+            end
+        end
+    
+        if ~isfield(K,'KomponentenMaske') || ~islogical(K.KomponentenMaske) ...
+                || numel(K.KomponentenMaske) ~= ndof
+            issues{end+1} = sprintf('ERROR: Kondensation.KomponentenMaske muss logischer Vektor der Länge %d sein.', ndof);
+        end
+    end
+
+
     ok = isempty(issues);
 end

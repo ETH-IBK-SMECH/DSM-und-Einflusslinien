@@ -1,5 +1,5 @@
 function kond = randbedingungenKondensieren(K_sys, F_sys, SPC, DOF, nDOF, nkd)
-% Statische Kondensation bei vorgegebenen Verschiebungen (SPC)
+% Statische Kondensation bei vorgegebenen Verschiebungen
 isKnown = false(1,nDOF); U_s = zeros(nDOF,1);
 for i = 1:numel(SPC)
     localIdx = (SPC(i).node-1)*nkd + SPC(i).dir;
@@ -10,7 +10,7 @@ for i = 1:numel(SPC)
 end
 freeMask = ~isKnown;
 
-% K_ff, f_f - K_fs*u_s
+% K_ff, f_f - K_fs*u_s 
 [K_red, F_red] = condensation(K_sys, F_sys, freeMask, 'preserve_size', false, 'known_ui', U_s(isKnown));
 
 kond = struct('K_sys_ff',K_red, 'F_sys_f_kond',F_red, ...

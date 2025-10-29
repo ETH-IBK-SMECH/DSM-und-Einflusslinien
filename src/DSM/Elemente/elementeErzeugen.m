@@ -1,7 +1,7 @@
 function model = elementeErzeugen(model)
 % Pro Stab: Geometrie, lokale Steifigkeit (inkl. Releases), Init Last-/Hilfsfelder
 
-[Knoten, Stab, ~, ~, ~, ~, ~, Info] = extractFields(model);
+[Knoten, Stab, ~, ~, ~, ~, Info] = extractFields(model);
 nkd = Info.nKnotenDOF;           % DOF pro Knoten
 n6  = 2*nkd;                     % Element-DOF
 
@@ -46,7 +46,8 @@ for i = 1:Info.nStaebe
 
     Stab(i).k_loc_v = k_loc_v;           % "voll" (vor Freigaben)
     Stab(i).k_loc   = k_loc;             % (nach Freigaben)
-    Stab(i).k_glob  = [];               
+    Stab(i).k_glob  = rotiereLocalToGlobal_K(k_loc, R);
+    Stab(i).vorhandeneDOF = vorhanden;
 
     % Initialisierungen für Folge-Schritte
     Stab(i).P_int  = zeros(n6,1);     % interne Elementlast 

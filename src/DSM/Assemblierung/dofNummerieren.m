@@ -1,7 +1,7 @@
 function [DOF, nDOF, model] = dofNummerieren(model)
 % Zuständig für DOF-Nummerierung
 
-[~, Stab, ~, Feder, ~, ~, SPC, Info, ~, ~] = extractFields(model);
+[~, Stab, Feder, ~, ~, SPC, Info, ~, ~] = extractFields(model);
 nN  = Info.nKnoten;    nkd = Info.nKnotenDOF;   n6 = 2*nkd;
 
 transIdx = [1, 2, nkd+1, nkd+2];
@@ -69,7 +69,6 @@ if Info.nSPC > 0
     end
 end
 
-
 % Nummerierung
 nDOF = sum(isActive);
 DOF = zeros(1, numel(isActive)); DOF(isActive) = 1:nDOF;
@@ -77,9 +76,9 @@ DOF = zeros(1, numel(isActive)); DOF(isActive) = 1:nDOF;
 % globale liste der Elementen (0 wo inaktiv)
 for i=1:Info.nStaebe
     loc = Stab(i).loc6;
-    ok  = loc >= 1 & loc <= numel(DOF);
+    act = Stab(i).activeStabDOF;    %ok  = loc >= 1 & loc <= numel(DOF);
     g6  = zeros(size(loc));
-    g6(ok) = DOF(loc(ok));
+    g6(act) = DOF(loc(act));        %g6(ok) = DOF(loc(ok));
     Stab(i).dof_e = g6;
 end
 

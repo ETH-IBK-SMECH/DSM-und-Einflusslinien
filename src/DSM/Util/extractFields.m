@@ -1,7 +1,6 @@
-function  [Knoten, Stab, Teilsystem, Feder, KnotenLast, StabLast, SPC, Info, gew_output, Einflusslinie] = extractFields(analysisModel)
+function  [Knoten, Stab, Feder, KnotenLast, StabLast, SPC, Info, gew_output, Einflusslinie] = extractFields(analysisModel)
    Knoten     = analysisModel.Knoten;
    Stab       = analysisModel.Stab;
-   Teilsystem = analysisModel.Teilsystem;
    Feder      = analysisModel.Feder;
    KnotenLast = analysisModel.KnotenLast;
    StabLast   = analysisModel.StabLast;

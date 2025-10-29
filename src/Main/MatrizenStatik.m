@@ -23,7 +23,7 @@ function [Model, status, Meldung, issues] = MatrizenStatik(inputSource, opts)
         addpath(srcFolder);                                    % src
         addpath(fullfile(srcFolder,'DSM'));                    % DSM root
         addpath(genpath(fullfile(srcFolder,'DSM')));           % alle DSM-Subfolder
-        addpath(fullfile(srcFolder,'Main'));                   % Main (falls nötig)
+        addpath(fullfile(srcFolder,'Main'));                   % Main
         addpath(fullfile(projRoot,'Beispiele'));               % <-- wichtig: Input .mlx
 
         %% 1) Input einlesen (gleiche Struktur von GUI oder Datei)
@@ -34,7 +34,7 @@ function [Model, status, Meldung, issues] = MatrizenStatik(inputSource, opts)
             % Input stammt aus dem GUI und besitzt die gleiche Struktur wie die Inputfiles
             Model.Input = inputSource;
         else
-            error('Ungültiger Input: erwartet wird ein Dateiname, eine Nummer oder eine Input-Struktur.');
+            error('Ungültiger Input: erwartet wird eine Nummer oder eine Input-Struktur.');
         end
 
         %% 2) Umwandlung: Input → Analysemodell (zentrale Quelle der Wahrheit)

@@ -7,14 +7,14 @@ model = elementeErzeugen(model);                % lokale & globale Steifigkeiten
 
 [DOF, nDOF, model] = dofNummerieren(model); % DOF-Nummerierung 
 
-% 2) System-Knotenlastvektor
+% 2) Systemknotenlastvektor
 F_sys_Knoten = knotenLastenAssemblieren(model, DOF, nDOF);
 
-% 3) System-Elementlastvektor
-[F_sys_Stab, F_sys_TS, model.Stab] = stabLastenAssemblieren(model, DOF, nDOF);
+% 3) Systemelementlastvektor
+[F_sys_Stab, model.Stab] = stabLastenAssemblieren(model, DOF, nDOF);
 
 % 4) Systemlastvektor
-F_sys = F_sys_Knoten - F_sys_Stab + F_sys_TS;
+F_sys = F_sys_Knoten - F_sys_Stab; 
 
 % 5) Systemsteifigkeitsmatrix
 K_sys = systemSteifigkeitAssemblieren(model, DOF, nDOF);
@@ -28,15 +28,20 @@ if isfield(model,'gew_output') && model.gew_output==2 && ...
 
     % --- Einflusslinie via Lagrange-Multiplikatoren ---
     kond = randbedingungenKondensierenEinflusslinie( ...
-                K_sys, F_sys, model.SPC, DOF, nDOF, model.Info.nKnotenDOF, model.Einflusslinie);
-    u_free_ext = reduziertesSystemLoesen(kond.K_sys_ff, kond.F_sys_f_kond);
-    u_free     = u_free_ext(1:end - kond.nLM);               % drop λ
-    U_sys      = verschiebungenEinsammeln(u_free, kond.known, kond.f(1:nDOF), nDOF);
+                K_sys, F_sys, model.SPC, DOF, model.Info.nKnotenDOF, model.Einflusslinie);
+    u_free_ext   = reduziertesSystemLoesen(kond.K_sys_ff, kond.F_sys_f_kond); u_kept = [];
+    u_free_phys  = u_free_ext(1:end - kond.nLM);
+    known = struct('U_s', kond.known_U_vector);
+    U_sys = verschiebungenEinsammeln(u_free_phys, known, kond.phys_freeMask, nDOF);
 
 else
     % --- Standardweg ohne Einflusslinie ---
     kond  = randbedingungenKondensieren(K_sys, F_sys, model.SPC, DOF, nDOF, model.Info.nKnotenDOF);
-    u_free = reduziertesSystemLoesen(kond.K_sys_ff, kond.F_sys_f_kond);
+    % optionale statische Kondensation (auf freie DOF)
+    [K_ff_red, F_f_red, kond] = Statische_Kondensation_durchfuehren(model, DOF, kond);
+    u_kept = reduziertesSystemLoesen(K_ff_red, F_f_red);
+    % Rückrechnung interner freie DOF (falls Kondensation stattfand)
+    u_free = Rueckrechnung_interner_DOF(kond, u_kept);
     U_sys  = verschiebungenEinsammeln(u_free, kond.known, kond.f, nDOF);
 end
 
@@ -48,8 +53,8 @@ model.Stab = stabkraefteBerechnen(model.Stab, U_sys, model.Info.nKnotenDOF);
 
 % Ergebnis-Struktur zurückgeben
 
-out = copyFields(model.Knoten, model.Stab, model.Teilsystem, FederOut, ...
+out = copyFields(model.Knoten, model.Stab, FederOut, ...
                  model.KnotenLast, model.StabLast, SPCout, model.Info, ...
                  model.gew_output, K_sys, F_sys, F_sys_Knoten, F_sys_Stab, ...
-                 kond, U_sys, DOF);
+                 kond, U_sys, DOF, u_kept);
 end

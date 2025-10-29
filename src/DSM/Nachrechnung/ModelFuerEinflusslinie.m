@@ -33,19 +33,19 @@ out = aM; %damit das alte nicht verloren geht und wir nur das nötige ändern k�
     x_neu = xS + Einflusslinie.Stelle*(xE-xS);
     y_neu = yS + Einflusslinie.Stelle*(yE-yS);
 
-    Kneu_1 = size(Knoten,2) + 1;
-    Kneu_2 = size(Knoten,2) + 2;
+    Kneu_1 = numel(Knoten) + 1;
+    Kneu_2 = numel(Knoten) + 2;
     Knoten(Kneu_1).x = x_neu;
     Knoten(Kneu_1).y = y_neu;
     Knoten(Kneu_2).x = x_neu;
     Knoten(Kneu_2).y = y_neu;
 
     Stab(end+1) = Stab(Idx); %erster neure Teilstab
-    Stab(end).eNode = size(Knoten,2)-1;
+    Stab(end).eNode = Kneu_1;           % <--- vorher: size(Knoten,2)-1
     Stab(end).eRelease = [];
 
     Stab(end+1) = Stab(Idx);
-    Stab(end).sNode = size(Knoten,2);
+    Stab(end).sNode = Kneu_2;           % <--- vorher: size(Knoten,2)
     Stab(end).sRelease = [];
 
 
@@ -59,10 +59,20 @@ out = aM; %damit das alte nicht verloren geht und wir nur das nötige ändern k�
     out.Knoten  = Knoten;
     out.Stab    = Stab;
     out.SPC     = SPC;
+
     out.Einflusslinie = Einflusslinie;
+    out.Einflusslinie.cutNodes = [Kneu_1, Kneu_2];
+    if isfield(aM,'Info') && isfield(aM.Info,'nKnotenDOF') && isfinite(aM.Info.nKnotenDOF)
+        nkd = aM.Info.nKnotenDOF;
+        out.Einflusslinie.keepMask = true(1, nkd);   % alle Komponenten am Schnitt behalten (falls Releases: hier maskieren)
+    end
+
+    if isfield(out,'Info')
+        out.Info.nKnoten = numel(out.Knoten);
+        out.Info.nStaebe = numel(out.Stab);
+    end
 
 %% sicherstellen dass alles existiert
-    if ~isfield(out,'Teilsystem'), out.Teilsystem = []; end
     if ~isfield(out,'Feder'),      out.Feder      = []; end
     if ~isfield(out,'KnotenLast'), out.KnotenLast = []; end
     if ~isfield(out,'StabLast'),   out.StabLast   = []; end
