@@ -12,7 +12,7 @@ function out = it_run_main(M)
 
     % 2) Optional EL preparation (like MatrizenStatik)
     if isfield(M,'gew_output') && M.gew_output == 2
-        M = ModelFuerEinflusslinie(M);
+        M = modelFuerEinflusslinie(M);
     end
 
     % 3) Run the real DSM pipeline

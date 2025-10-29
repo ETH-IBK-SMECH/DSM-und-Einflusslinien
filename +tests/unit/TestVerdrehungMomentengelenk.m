@@ -10,7 +10,7 @@ classdef TestVerdrehungMomentengelenk < matlab.unittest.TestCase
             u_loc([2,5,6]) = [0.01, 0.02, 0.005]; % vertical displacements + end rotation
             vorhandene = [1 1 0 1 1 1];           % DOF 3 missing
 
-            u_new = VerdrehungMomentengelenk(u_loc, L, vorhandene);
+            u_new = verdrehungMomentengelenk(u_loc, L, vorhandene);
 
             % expected rotation at node 1 (u3)
             u2 = -u_loc(2)*3/(2*L);
@@ -28,7 +28,7 @@ classdef TestVerdrehungMomentengelenk < matlab.unittest.TestCase
             u_loc([2,3,5]) = [0.01, 0.002, 0.02];
             vorhandene = [1 1 1 1 1 0];           % DOF 6 missing
 
-            u_new = VerdrehungMomentengelenk(u_loc, L, vorhandene);
+            u_new = verdrehungMomentengelenk(u_loc, L, vorhandene);
 
             u2 = -u_loc(2)*3/(2*L);
             u3 = -u_loc(3)*0.5;
@@ -45,7 +45,7 @@ classdef TestVerdrehungMomentengelenk < matlab.unittest.TestCase
             u_loc([2,5]) = [0.01, 0.03];          % only vertical DOFs active
             vorhandene = [0 1 0 0 1 0];           % only 2 active (u2,u5)
 
-            u_new = VerdrehungMomentengelenk(u_loc, L, vorhandene);
+            u_new = verdrehungMomentengelenk(u_loc, L, vorhandene);
 
             expected = (-u_loc(2)/L) + (u_loc(5)/L);
             tc.verifyEqual(u_new(3), expected, 'AbsTol', 1e-12);
@@ -57,7 +57,7 @@ classdef TestVerdrehungMomentengelenk < matlab.unittest.TestCase
             L = 2;
             u_loc = rand(6,1);
             vorhandene = true(1,6);
-            u_new = VerdrehungMomentengelenk(u_loc, L, vorhandene);
+            u_new = verdrehungMomentengelenk(u_loc, L, vorhandene);
             tc.verifyEqual(u_new, u_loc);
         end
 
@@ -66,7 +66,7 @@ classdef TestVerdrehungMomentengelenk < matlab.unittest.TestCase
             L = 2;
             u_loc = rand(6,1);
             vorhandene = [1 1 1 1 0 0];  % 4 active, not handled explicitly
-            u_new = VerdrehungMomentengelenk(u_loc, L, vorhandene);
+            u_new = verdrehungMomentengelenk(u_loc, L, vorhandene);
             tc.verifyEqual(u_new, u_loc);
         end
     end

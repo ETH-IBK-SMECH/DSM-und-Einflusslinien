@@ -1,4 +1,4 @@
-function [K_ff_red, F_f_red, kond] = Statische_Kondensation_durchfuehren(model, DOF, kond)
+function [K_ff_red, F_f_red, kond] = statische_Kondensation_durchfuehren(model, DOF, kond)
 % Statische Kondensation auf der Ebene der freien DOF.
 % Erwartet:
 %   kond.K_sys_ff, kond.F_sys_f_kond : freie Gleichungen nach Randbedingungen

@@ -20,7 +20,7 @@ end
 % Verdrehungen an Momentengelenken korrigieren (wie Original)
 for i = 1:numel(Stab)
     if isfield(Stab(i),'u_loc') && ~isempty(Stab(i).u_loc)
-        Stab(i).u_loc = VerdrehungMomentengelenk(Stab(i).u_loc, Stab(i).L, Stab(i).vorhandeneDOF);
+        Stab(i).u_loc = verdrehungMomentengelenk(Stab(i).u_loc, Stab(i).L, Stab(i).vorhandeneDOF);
     end
 end
 end

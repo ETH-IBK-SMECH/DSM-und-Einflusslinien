@@ -295,7 +295,7 @@ classdef TestI_FixedFixedBeam < matlab.unittest.TestCase
             M = tc.M0;
             EL4 = struct('TypEL',4,'Knoten',2,'Richtung',2);
             Ms = M; Ms.Einflusslinie = EL4;
-            Ms2 = ModelFuerEinflusslinie(Ms);
+            Ms2 = modelFuerEinflusslinie(Ms);
             tc.verifyEqual(Ms2.SPC(end).node, 2);
             tc.verifyEqual(Ms2.SPC(end).dir,  2);
             tc.verifyEqual(Ms2.SPC(end).val, -1);

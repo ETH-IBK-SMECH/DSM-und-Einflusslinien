@@ -30,7 +30,7 @@ classdef Test_StatischeKondensation < matlab.unittest.TestCase
             M = tc.mkModel(3, 3, [], []);
             [kond0.K_sys_ff, kond0.F_sys_f_kond] = tc.spdSystem(4);
 
-            [K2, F2, kond2] = Statische_Kondensation_durchfuehren(M, 1:999, kond0);
+            [K2, F2, kond2] = statische_Kondensation_durchfuehren(M, 1:999, kond0);
 
             tc.verifyEqual(K2, kond0.K_sys_ff);
             tc.verifyEqual(F2, kond0.F_sys_f_kond);
@@ -54,7 +54,7 @@ classdef Test_StatischeKondensation < matlab.unittest.TestCase
             M = tc.mkModel(1, nkd, 1, [1 0 0]);
             [kond0.K_sys_ff, kond0.F_sys_f_kond] = tc.spdSystem(3);
 
-            [Kred, Fred, kond2] = Statische_Kondensation_durchfuehren(M, DOF, kond0);
+            [Kred, Fred, kond2] = statische_Kondensation_durchfuehren(M, DOF, kond0);
 
             tc.verifySize(Kred, [2 2]);
             tc.verifySize(Fred, [2 1]);
@@ -76,7 +76,7 @@ classdef Test_StatischeKondensation < matlab.unittest.TestCase
 
             % keep all (no internal)
             M_keepAll = tc.mkModel(1, nkd, 1, [0 0 0]);
-            [K2, F2, kond2] = Statische_Kondensation_durchfuehren(M_keepAll, DOF, kond0);
+            [K2, F2, kond2] = statische_Kondensation_durchfuehren(M_keepAll, DOF, kond0);
             tc.verifyEqual(K2, kond0.K_sys_ff);
             tc.verifyEqual(F2, kond0.F_sys_f_kond);
             % Meta consistent
@@ -86,7 +86,7 @@ classdef Test_StatischeKondensation < matlab.unittest.TestCase
 
             % keep none (all internal) -> also early return (no change)
             M_keepNone = tc.mkModel(1, nkd, 1, [1 1 1]);
-            [K3, F3, kond3] = Statische_Kondensation_durchfuehren(M_keepNone, DOF, kond0);
+            [K3, F3, kond3] = statische_Kondensation_durchfuehren(M_keepNone, DOF, kond0);
             tc.verifyEqual(K3, kond0.K_sys_ff);
             tc.verifyEqual(F3, kond0.F_sys_f_kond);
             % Meta consistent

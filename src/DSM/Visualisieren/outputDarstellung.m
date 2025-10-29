@@ -1,4 +1,4 @@
-function [out] = OutputDarstellung(Model)
+function [out] = outputDarstellung(Model)
 
 gew_output = Model.Analyse.gew_output;
 

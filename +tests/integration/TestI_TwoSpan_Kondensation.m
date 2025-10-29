@@ -159,7 +159,7 @@ classdef TestI_TwoSpan_Kondensation < matlab.unittest.TestCase
                 'Pipeline must export reduced kept solution as out.u_kept.');
         
             % Back-substitute (free-space)
-            u_recon = Rueckrechnung_interner_DOF(outC.kond, outC.u_kept);
+            u_recon = rueckrechnung_interner_DOF(outC.kond, outC.u_kept);
             
             % Expand to GLOBAL space using the condensed run's free-mask
             U_recon = zeros(size(outC.DOF));           % global-length vector

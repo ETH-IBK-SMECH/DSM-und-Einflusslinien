@@ -22,7 +22,7 @@ classdef Test_RueckrechnungInternerDOF < matlab.unittest.TestCase
             tc.baseModel(2, 3);  % just to ensure ModelBuilder loads correctly
 
             u_kept = randn(5,1);
-            u_free = Rueckrechnung_interner_DOF(struct(), u_kept);
+            u_free = rueckrechnung_interner_DOF(struct(), u_kept);
 
             tc.verifyEqual(u_free, u_kept);
         end
@@ -54,7 +54,7 @@ classdef Test_RueckrechnungInternerDOF < matlab.unittest.TestCase
                 'n',     meta.n );
 
             % Reconstruct full free vector and compare against direct solve
-            u_recon = Rueckrechnung_interner_DOF(KMeta, u_kept);
+            u_recon = rueckrechnung_interner_DOF(KMeta, u_kept);
             u_full  = K_ff \ F_f;
 
             tc.verifyEqual(u_recon, u_full, 'AbsTol', 1e-10, 'RelTol', 1e-10);

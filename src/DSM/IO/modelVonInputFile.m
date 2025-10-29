@@ -1,4 +1,4 @@
-function [model] = ModelVonInputFile(inputFile)
+function [model] = modelVonInputFile(inputFile)
 
     switch inputFile
         case 0

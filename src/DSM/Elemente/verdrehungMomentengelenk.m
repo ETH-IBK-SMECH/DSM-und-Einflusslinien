@@ -1,4 +1,4 @@
-function u_loc = VerdrehungMomentengelenk(u_loc, L, vorhandeneDOF)
+function u_loc = verdrehungMomentengelenk(u_loc, L, vorhandeneDOF)
     
     if sum(vorhandeneDOF) == 5
         if ~vorhandeneDOF(3)

@@ -1,4 +1,4 @@
-function [out] = ModelFuerEinflusslinie(aM)
+function [out] = modelFuerEinflusslinie(aM)
     
 out = aM; %damit das alte nicht verloren geht und wir nur das nötige ändern können
 

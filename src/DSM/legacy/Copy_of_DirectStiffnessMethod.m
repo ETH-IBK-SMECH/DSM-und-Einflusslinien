@@ -512,7 +512,7 @@ function [out] = DirectStiffnessMethodlegacy(analysisModel)
    %Verdrehungen an einem Momentengelenk
 
    for i = 1:Info.nStaebe
-       Stab(i).u_loc = VerdrehungMomentengelenk(Stab(i).u_loc,Stab(i).L,Stab(i).vorhandeneDOF);
+       Stab(i).u_loc = verdrehungMomentengelenk(Stab(i).u_loc,Stab(i).L,Stab(i).vorhandeneDOF);
    end
 
       

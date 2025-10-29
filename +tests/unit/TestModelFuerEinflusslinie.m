@@ -11,7 +11,7 @@ classdef TestModelFuerEinflusslinie < matlab.unittest.TestCase
             M.SPC  = struct([]);
             M.Einflusslinie = struct('TypEL',4,'Knoten',2,'Richtung',1);
 
-            out = ModelFuerEinflusslinie(M);
+            out = modelFuerEinflusslinie(M);
 
             tc.verifyEqual(numel(out.SPC), 1);
             tc.verifyEqual(out.SPC(1).node, 2);
@@ -33,7 +33,7 @@ classdef TestModelFuerEinflusslinie < matlab.unittest.TestCase
             M.SPC  = struct([]);
             M.Einflusslinie = struct('TypEL',1,'Stab',1,'Stelle',0.3); % cut at 30%
 
-            out = ModelFuerEinflusslinie(M);
+            out = modelFuerEinflusslinie(M);
 
             % Two new nodes at the same coordinates (0.3,0)
             tc.assertGreaterThan(numel(out.Knoten), 2);
@@ -59,7 +59,7 @@ classdef TestModelFuerEinflusslinie < matlab.unittest.TestCase
             M.Stab = S; M.Info.nStaebe=1; M.Info.nKnoten=2; M.SPC=struct([]);
             M.Einflusslinie = struct('TypEL',3,'Stab',1,'Stelle',0.5);
 
-            out = ModelFuerEinflusslinie(M);
+            out = modelFuerEinflusslinie(M);
 
             tc.verifyEqual(out.Info.nKnoten, numel(out.Knoten));
             tc.verifyEqual(out.Info.nStaebe, numel(out.Stab));

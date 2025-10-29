@@ -1,4 +1,4 @@
-function u_free = Rueckrechnung_interner_DOF(kond, u_kept)
+function u_free = rueckrechnung_interner_DOF(kond, u_kept)
 % Rekonstruiert den vollständigen freien Verschiebungsvektor nach einer
 % statischen Kondensation (freie Ebene).
 % KMeta muss enthalten:

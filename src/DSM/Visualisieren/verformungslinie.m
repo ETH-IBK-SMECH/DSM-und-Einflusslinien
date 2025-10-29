@@ -1,4 +1,4 @@
-function [out] = Verformungslinie(analyseModel)
+function [out] = verformungslinie(analyseModel)
 
     Stab = analyseModel.Stab;
     nStaebe = size(Stab,2);

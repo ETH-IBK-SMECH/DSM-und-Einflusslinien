@@ -3,7 +3,7 @@ function out = DirectStiffnessMethod(model)
 % Analog aufgebaut zu den Schritten auf der DSM-Hilfstabelle
 
 % 1) Stabeigenschaften → Stabsteifigkeitsmatrix → Elementlastvektor
-model = elementeErzeugen(model);                % lokale & globale Steifigkeiten pro Stab, Freigaben, Geometrie
+model = elementeErzeugen(model); % lokale & globale Steifigkeiten pro Stab, Freigaben, Geometrie (model.Stab)
 
 [DOF, nDOF, model] = dofNummerieren(model); % DOF-Nummerierung 
 
@@ -38,10 +38,10 @@ else
     % --- Standardweg ohne Einflusslinie ---
     kond  = randbedingungenKondensieren(K_sys, F_sys, model.SPC, DOF, nDOF, model.Info.nKnotenDOF);
     % optionale statische Kondensation (auf freie DOF)
-    [K_ff_red, F_f_red, kond] = Statische_Kondensation_durchfuehren(model, DOF, kond);
+    [K_ff_red, F_f_red, kond] = statische_Kondensation_durchfuehren(model, DOF, kond);
     u_kept = reduziertesSystemLoesen(K_ff_red, F_f_red);
     % Rückrechnung interner freie DOF (falls Kondensation stattfand)
-    u_free = Rueckrechnung_interner_DOF(kond, u_kept);
+    u_free = rueckrechnung_interner_DOF(kond, u_kept);
     U_sys  = verschiebungenEinsammeln(u_free, kond.known, kond.f, nDOF);
 end
 

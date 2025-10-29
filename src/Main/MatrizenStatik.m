@@ -29,7 +29,7 @@ function [Model, status, Meldung, issues] = MatrizenStatik(inputSource, opts)
         %% 1) Input einlesen (gleiche Struktur von GUI oder Datei)
         if isnumeric(inputSource)
             % Input stammt aus einem Skript oder einer .m-Datei
-            Model.Input = ModelVonInputFile(inputSource);
+            Model.Input = modelVonInputFile(inputSource);
         elseif isstruct(inputSource)
             % Input stammt aus dem GUI und besitzt die gleiche Struktur wie die Inputfiles
             Model.Input = inputSource;
@@ -50,7 +50,7 @@ function [Model, status, Meldung, issues] = MatrizenStatik(inputSource, opts)
 
         %% 4) Optionale Vorbereitung für Einflusslinien
         if isfield(Model.Analyse,'gew_output') && Model.Analyse.gew_output == 2
-            Model.Analyse = ModelFuerEinflusslinie(Model.Analyse);
+            Model.Analyse = modelFuerEinflusslinie(Model.Analyse);
         end
 
         %% 5) Nur-Check-Modus (z.B. für Unit-tests)
@@ -62,9 +62,9 @@ function [Model, status, Meldung, issues] = MatrizenStatik(inputSource, opts)
         Model.Analyse = DirectStiffnessMethod(Model.Analyse);
 
         %% 7) Ergebnisse zusammenstellen + (optional) darstellen
-        Model.Output = ZusammenSetzen(Model.Analyse);
+        Model.Output = zusammenSetzen(Model.Analyse);
         if opts.renderOutput
-            OutputDarstellung(Model);
+            outputDarstellung(Model);
         end
 
     catch ME
