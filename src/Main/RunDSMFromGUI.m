@@ -1,4 +1,4 @@
-function [Model, status, msgs, warns] = runDSMFromGUI(gui, outputType)
+function [Model, status, msgs, warns] = RunDSMFromGUI(gui, outputType)
 %% TODO
 msgs = {};
 warns = {};
