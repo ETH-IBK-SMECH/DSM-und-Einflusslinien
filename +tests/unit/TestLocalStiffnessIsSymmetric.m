@@ -1,4 +1,4 @@
-classdef TestLocalStiffness < matlab.unittest.TestCase
+classdef TestLocalStiffnessIsSymmetric < matlab.unittest.TestCase
 
     methods (Test)
 
