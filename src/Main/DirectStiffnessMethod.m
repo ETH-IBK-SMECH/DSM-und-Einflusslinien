@@ -49,12 +49,12 @@ end
 model.Stab = stabkraefteBerechnen(model.Stab, U_sys, model.Info.nKnotenDOF);
 
 % 9) Auflagerreaktionen
-[Reactions, SPCout, FederOut] = auflagerreaktionenBerechnen(K_sys, U_sys, F_sys_Knoten, F_sys_Stab, model.SPC, model.Feder, DOF, model.Info.nKnotenDOF);
+[Reaktionen, SPCout, FederOut] = auflagerreaktionenBerechnen(K_sys, U_sys, F_sys_Knoten, F_sys_Stab, model.SPC, model.Feder, DOF, model.Info.nKnotenDOF);
 
 % Ergebnis-Struktur zurückgeben
 
 out = copyFields(model.Knoten, model.Stab, FederOut, ...
                  model.KnotenLast, model.StabLast, SPCout, model.Info, ...
                  model.gew_output, K_sys, F_sys, F_sys_Knoten, F_sys_Stab, ...
-                 kond, U_sys, DOF, u_kept);
+                 kond, U_sys, DOF, u_kept, Reaktionen);
 end

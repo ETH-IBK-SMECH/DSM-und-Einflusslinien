@@ -1,5 +1,5 @@
 function [out] = copyFields(Knoten, Stab, Feder, KnotenLast, StabLast, SPC, Info, gew_output,...
-                            K_sys, F_sys, F_sys_Knoten, F_sys_Stab, kond, U_sys, DOF, u_kept)
+                            K_sys, F_sys, F_sys_Knoten, F_sys_Stab, kond, U_sys, DOF, u_kept, Reaktionen)
    out.Knoten       = Knoten;   
    out.Stab         = Stab; 
    out.Feder        = Feder; 
@@ -16,6 +16,6 @@ function [out] = copyFields(Knoten, Stab, Feder, KnotenLast, StabLast, SPC, Info
    out.kond         = kond;
    out.DOF          = DOF;
    out.u_kept       = u_kept;
-   
+   out.Reaktionen   = Reaktionen;
    %...
 end                         
