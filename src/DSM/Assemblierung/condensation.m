@@ -24,17 +24,19 @@ function [K_out, f_out, meta] = condensation(K, f, keepMask, varargin)
 
 % optionen einlesen
 opts.preserve_size = true;
-opts.known_ui      = [];
-if mod(numel(varargin),2)~=0
-    error('Kondensation:NameValuePairs','Expected name/value pairs.');
+opts.known_ui = [];
+if mod(numel(varargin), 2) ~= 0
+    error('Kondensation:NameValuePairs', 'Expected name/value pairs.');
 end
 for k = 1:2:numel(varargin)
     opts.(varargin{k}) = varargin{k+1};
 end
 
 % e/i gruppen aufbauen
-n  = size(K,1);
-if islogical(keepMask), e = find(keepMask); else, e = keepMask(:)'; end
+n = size(K, 1);
+if islogical(keepMask), e = find(keepMask);
+else, e = keepMask(:)';
+end
 i  = setdiff(1:n, e);
 ne = numel(e);
 
@@ -55,25 +57,29 @@ else
 end
 
 % Berechnungen
-Kee = K(e,e);
-if isempty(opts.known_ui)          % u_i eliminieren
+Kee = K(e, e);
+if isempty(opts.known_ui) % u_i eliminieren
     if isempty(i)
-        Kred = Kee;  if ~isempty(f), fred = f(e); end
+        Kred = Kee;
+        if ~isempty(f), fred = f(e);
+        end
     else
-        Kei = K(e,i);  Kii = K(i,i);  Kie = K(i,e);
+        Kei = K(e, i);
+        Kii = K(i, i);
+        Kie = K(i, e);
         Kred = Kee - Kei * (Kii \ Kie);
         if ~isempty(f), fred = f(e) - Kei * (Kii \ f(i)); end
     end
-else                               % falls u_i bekannt
+else % falls u_i bekannt
     Kred = Kee;
     if ~isempty(f)
-        fred = f(e) - K(e,i) * opts.known_ui;
+        fred = f(e) - K(e, i) * opts.known_ui;
     end
 end
 
 % korrekte grösse zuordnen
 if opts.preserve_size
-    K_out(e,e) = Kred;
+    K_out(e, e) = Kred;
     if ~isempty(f), f_out(e) = fred; end
 else
     K_out = Kred;

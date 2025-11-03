@@ -12,7 +12,7 @@ for k = 1:numel(gui.Members)
     end
 end
 ok = isempty(issues);
-if any([gui.Members.E] <= 0), issues{end+1}='Each member needs E>0.'; end
-if any([gui.Members.A] <= 0), issues{end+1}='Each member needs A>0.'; end
-if any([gui.Members.Iy] <= 0), issues{end+1}='Each member needs Iy>0.'; end
+if any([gui.Members.E] <= 0), issues{end+1} = 'Each member needs E>0.'; end
+if any([gui.Members.A] <= 0), issues{end+1} = 'Each member needs A>0.'; end
+if any([gui.Members.Iy] <= 0), issues{end+1} = 'Each member needs Iy>0.'; end
 end

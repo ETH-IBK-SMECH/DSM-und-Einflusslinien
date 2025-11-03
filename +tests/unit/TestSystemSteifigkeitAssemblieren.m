@@ -2,23 +2,23 @@ classdef TestSystemSteifigkeitAssemblieren < matlab.unittest.TestCase
     % Tests for systemSteifigkeitAssemblieren(model, DOF, nDOF)
 
     methods (Test)
-        function empty_system_returns_zero(tc)  %
+        function empty_system_returns_zero(tc) %
             % No elements, no teilsysteme, some DOFs activated by SPC/Feder
             % Assures that empty system does not lead to crash or invalid
             % output
             M = tests.util.ModelBuilder.minimal(2, 3);
             M.Info.nStaebe = 0;
             % Activate two DOFs so nDOF>0
-            M.SPC   = struct('node', 1, 'dir', 1);
+            M.SPC = struct('node', 1, 'dir', 1);
             M.Info.nSPC = 1;
             M.Feder = struct('node', 2, 'dir', 2);
             M.Info.nFedern = 1;
-            
-            M = sanitizeAnalysisModel(M);       % creates all necessary fields (Stab.inTeilSys etc.)
+
+            M = sanitizeAnalysisModel(M); % creates all necessary fields (Stab.inTeilSys etc.)
             [DOF, nDOF, ~] = dofNummerieren(M);
             K = systemSteifigkeitAssemblieren(M, DOF, nDOF);
 
-            tc.verifyEqual(size(K), [nDOF nDOF]);
+            tc.verifyEqual(size(K), [nDOF, nDOF]);
             tc.verifyTrue(issparse(K));
             tc.verifyEqual(nnz(K), 0);
         end
@@ -28,11 +28,13 @@ classdef TestSystemSteifigkeitAssemblieren < matlab.unittest.TestCase
             C = tests.util.Const;
             M = tests.util.ModelBuilder.minimal(2, 3);
             S = tests.util.ModelBuilder.oneBarHoriz(M);
-            S.cs = 1; S.sn = 0;
+            S.cs = 1;
+            S.sn = 0;
             S.k_loc = getK(C.E, C.A, C.I, C.L);
-            S.R     = getR(S.cs, S.sn);
+            S.R = getR(S.cs, S.sn);
             S.k_glob = S.R.' * S.k_loc * S.R;
-            M.Stab  = S; M.Info.nStaebe = 1;
+            M.Stab = S;
+            M.Info.nStaebe = 1;
 
             M = sanitizeAnalysisModel(M);
             [DOF, nDOF, M] = dofNummerieren(M);
@@ -47,14 +49,16 @@ classdef TestSystemSteifigkeitAssemblieren < matlab.unittest.TestCase
             C = tests.util.Const;
             M = tests.util.ModelBuilder.minimal(2, 3);
             S = tests.util.ModelBuilder.oneBarHoriz(M);
-            S.cs = 1; S.sn = 0;
-            S.sRelease = [2 3];
+            S.cs = 1;
+            S.sn = 0;
+            S.sRelease = [2, 3];
             S.eRelease = 1;
             S.k_loc = getK(C.E, C.A, C.I, C.L);
-            S.R     = getR(S.cs, S.sn);
+            S.R = getR(S.cs, S.sn);
             S.k_glob = S.R.' * S.k_loc * S.R;
-            M.Stab  = S; M.Info.nStaebe = 1;
-            
+            M.Stab = S;
+            M.Info.nStaebe = 1;
+
             M = sanitizeAnalysisModel(M);
             [DOF, nDOF, M] = dofNummerieren(M);
             K = systemSteifigkeitAssemblieren(M, DOF, nDOF);
@@ -62,12 +66,12 @@ classdef TestSystemSteifigkeitAssemblieren < matlab.unittest.TestCase
             % Build expected by masking Ke with element's activeStabDOF and placing at dd
             Ke = S.R.' * S.k_loc * S.R;
             mask = M.Stab(1).activeStabDOF(:).';
-            dd   = M.Stab(1).dof_e(mask);
+            dd = M.Stab(1).dof_e(mask);
             Ke_m = Ke(mask, mask);
 
             % K should equal Ke(mask,mask) placed at dd indices -> since numbering is contiguous,
             % K(dd,dd) must equal Ke_m and size(K) = nDOF = 3
-            tc.verifyEqual(size(K), [nDOF nDOF]);
+            tc.verifyEqual(size(K), [nDOF, nDOF]);
             tc.verifyEqual(full(K(dd, dd)), Ke_m, 'AbsTol', C.ABS, 'RelTol', C.REL);
         end
 
@@ -77,19 +81,22 @@ classdef TestSystemSteifigkeitAssemblieren < matlab.unittest.TestCase
             M = tests.util.ModelBuilder.minimal(3, 3);
 
             S1 = tests.util.ModelBuilder.oneBarHoriz(M, 1, 2);
-            S1.cs = 1; S1.sn = 0;
+            S1.cs = 1;
+            S1.sn = 0;
             S1.k_loc = getK(C.E, C.A, C.I, C.L);
-            S1.R     = getR(S1.cs, S1.sn);
+            S1.R = getR(S1.cs, S1.sn);
             S1.k_glob = S1.R.' * S1.k_loc * S1.R;
 
             S2 = tests.util.ModelBuilder.oneBarHoriz(M, 2, 3);
-            S2.cs = 1; S2.sn = 0;
+            S2.cs = 1;
+            S2.sn = 0;
             S2.k_loc = getK(C.E, C.A, C.I, C.L);
-            S2.R     = getR(S2.cs, S2.sn);
+            S2.R = getR(S2.cs, S2.sn);
             S2.k_glob = S2.R.' * S2.k_loc * S2.R;
 
-            M.Stab = [S1 S2]; M.Info.nStaebe = 2;
-            
+            M.Stab = [S1, S2];
+            M.Info.nStaebe = 2;
+
             M = sanitizeAnalysisModel(M);
             [DOF, nDOF, M] = dofNummerieren(M);
             K = systemSteifigkeitAssemblieren(M, DOF, nDOF);
@@ -99,7 +106,7 @@ classdef TestSystemSteifigkeitAssemblieren < matlab.unittest.TestCase
             for i = 1:2
                 Ke = M.Stab(i).R.' * M.Stab(i).k_loc * M.Stab(i).R;
                 mask = M.Stab(i).activeStabDOF(:).';
-                dd   = M.Stab(i).dof_e(mask);
+                dd = M.Stab(i).dof_e(mask);
                 Kexp(dd, dd) = Kexp(dd, dd) + Ke(mask, mask);
             end
 
@@ -113,16 +120,18 @@ classdef TestSystemSteifigkeitAssemblieren < matlab.unittest.TestCase
 
             % One free bar
             S = tests.util.ModelBuilder.oneBarHoriz(M);
-            S.cs = 1; S.sn = 0;
+            S.cs = 1;
+            S.sn = 0;
             S.k_loc = getK(C.E, C.A, C.I, C.L);
-            S.R     = getR(S.cs, S.sn);
+            S.R = getR(S.cs, S.sn);
             S.k_glob = S.R.' * S.k_loc * S.R;
-            M.Stab  = S; M.Info.nStaebe = 1;
+            M.Stab = S;
+            M.Info.nStaebe = 1;
 
             % Teilsystem present but not usable
-            M.Teilsystem = struct('KnotenTSgeordnet', 1);  % length==1
+            M.Teilsystem = struct('KnotenTSgeordnet', 1); % length==1
             M.Info.nTeilsys = 1;
-            
+
             M = sanitizeAnalysisModel(M);
             [DOF, nDOF, M] = dofNummerieren(M);
             K = systemSteifigkeitAssemblieren(M, DOF, nDOF);
@@ -138,16 +147,18 @@ classdef TestSystemSteifigkeitAssemblieren < matlab.unittest.TestCase
             M = tests.util.ModelBuilder.minimal(2, 3);
 
             S = tests.util.ModelBuilder.oneBarHoriz(M);
-            S.cs = 1; S.sn = 0;
+            S.cs = 1;
+            S.sn = 0;
             S.k_loc = getK(C.E, C.A, C.I, C.L);
-            S.R     = getR(S.cs, S.sn);
+            S.R = getR(S.cs, S.sn);
 
             % Brutally release all 6 local DOFs
-            S.sRelease = [1 2 3];
-            S.eRelease = [1 2 3];
+            S.sRelease = [1, 2, 3];
+            S.eRelease = [1, 2, 3];
 
-            M.Stab  = S; M.Info.nStaebe = 1;
-            
+            M.Stab = S;
+            M.Info.nStaebe = 1;
+
             M = sanitizeAnalysisModel(M);
             [DOF, nDOF, M] = dofNummerieren(M);
             K = systemSteifigkeitAssemblieren(M, DOF, nDOF);

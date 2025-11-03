@@ -2,11 +2,11 @@ function A = guiToAnalysis(G)
 % TODO
 
 A.Knoten = arrayfun(@(n) struct('x', n.x, 'y', n.y), G.Nodes);
-A.Stab   = arrayfun(@(m) struct( ...
+A.Stab = arrayfun(@(m) struct( ...
     'sNode', m.sNode, 'eNode', m.eNode, ...
     'E', m.E, 'A', m.A, 'Iy', m.Iy, ...
     'sRelease', m.sRelease, 'eRelease', m.eRelease ...
-), G.Members);
+    ), G.Members);
 
 A.SPC = arrayfun(@(s) struct('node', s.node, 'dir', s.dir, 'val', s.val), G.Supports);
 
@@ -16,7 +16,7 @@ A.KnotenLast = arrayfun(@(l) struct('node', l.node, 'dir', l.dir, 'val', l.val),
 
 A.StabLast = arrayfun(@(q) struct( ...
     'stab', q.member, 'typ', q.type, 'val', q.val, 'x', q.xSpan ...
-), G.MemberLoads);
+    ), G.MemberLoads);
 
-A.Info.nKnotenDOF = 3;    
+A.Info.nKnotenDOF = 3;
 end

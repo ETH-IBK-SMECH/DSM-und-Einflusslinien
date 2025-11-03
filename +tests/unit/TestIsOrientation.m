@@ -36,7 +36,7 @@ classdef TestIsOrientation < matlab.unittest.TestCase
             tc.verifyFalse(v);
 
             % Slightly off vertical: c within tol -> still vertical
-            [h, v] = isOrientation(cos(pi/2 + 1e-7), sin(pi/2 + 1e-7), tol);
+            [h, v] = isOrientation(cos(pi/2+1e-7), sin(pi/2+1e-7), tol);
             tc.verifyFalse(h);
             tc.verifyTrue(v);
 
@@ -48,10 +48,12 @@ classdef TestIsOrientation < matlab.unittest.TestCase
 
         function renormalization_works(tc)
             % Angle 30°, but scaled vector (2c, 2s) should be renormalized internally
-            a = pi/6; c = cos(a); s = sin(a);
+            a = pi / 6;
+            c = cos(a);
+            s = sin(a);
             [h1, v1] = isOrientation(c, s);
             [h2, v2] = isOrientation(2*c, 2*s); % not unit length
-            tc.verifyEqual([h2 v2], [h1 v1]);   % same classification
+            tc.verifyEqual([h2, v2], [h1, v1]); % same classification
             tc.verifyFalse(h1);
             tc.verifyFalse(v1);
         end
@@ -60,19 +62,19 @@ classdef TestIsOrientation < matlab.unittest.TestCase
             % If (c,s) ~ (0,0): n <= eps branch -> no renormalization
             % Classification falls back to |s|<tol and |c|<tol -> both true
             [h, v] = isOrientation(0, 0);
-            tc.verifyTrue(h,  'With c=s=0, |s|<tol holds → horizontal');
-            tc.verifyTrue(v,  'With c=s=0, |c|<tol holds → vertical');
+            tc.verifyTrue(h, 'With c=s=0, |s|<tol holds → horizontal');
+            tc.verifyTrue(v, 'With c=s=0, |c|<tol holds → vertical');
         end
 
         function generic_non_axis_angles(tc)
             % 37 degrees → neither horizontal nor vertical
-            a = 37*pi/180;
+            a = 37 * pi / 180;
             [h, v] = isOrientation(cos(a), sin(a));
             tc.verifyFalse(h);
             tc.verifyFalse(v);
 
             % 89.9 degrees with default tol (1e-12) → still not vertical exactly
-            a = 89.9*pi/180;
+            a = 89.9 * pi / 180;
             [h, v] = isOrientation(cos(a), sin(a)); % default tol is very tight
             tc.verifyFalse(h);
             tc.verifyFalse(v);

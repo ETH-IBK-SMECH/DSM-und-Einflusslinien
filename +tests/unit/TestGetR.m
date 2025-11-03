@@ -4,9 +4,10 @@ classdef TestGetR < matlab.unittest.TestCase
         function size_and_orthonormality(tc)
             ang = linspace(0, 2*pi, 13);
             for a = ang
-                c = cos(a); s = sin(a);
+                c = cos(a);
+                s = sin(a);
                 R = getR(c, s);
-                tc.verifySize(R, [6 6]);
+                tc.verifySize(R, [6, 6]);
                 tc.verifyEqual(R.'*R, eye(6), 'AbsTol', 1e-12);
                 tc.verifyEqual(det(R), 1, 'AbsTol', 1e-12);
             end

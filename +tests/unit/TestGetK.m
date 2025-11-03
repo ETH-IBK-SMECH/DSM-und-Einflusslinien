@@ -7,7 +7,7 @@ classdef TestGetK < matlab.unittest.TestCase
             C = tests.util.Const;
             K = getK(C.E, C.A, C.I, C.L);
 
-            tc.verifySize(K, [6 6]);
+            tc.verifySize(K, [6, 6]);
             tc.verifyEqual(K, K.', 'AbsTol', C.ABS, ...
                 'Matrix should be symmetric');
         end
