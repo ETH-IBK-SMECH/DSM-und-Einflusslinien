@@ -53,7 +53,7 @@ function [in] = InputFile4()
       Richtung = []'; 
       Wert = []'; 
       StartPosition = []';
-      in.StabLasten_konzentriert = table(Stab, Richtung, Wert, StartPosition);   
+      in.StabLasten_konzentriert = ble(Stab, Richtung, Wert, StartPosition);   
    %StabLasten (verteilt)
       Stab = []; 
       Richtung = []; 

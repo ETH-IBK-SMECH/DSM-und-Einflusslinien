@@ -2,27 +2,27 @@ function out = DirectStiffnessMethod(model)
 % Hauptpipeline
 % Analog aufgebaut zu den Schritten auf der DSM-Hilfstabelle
 
-% 1) Stabeigenschaften → Stabsteifigkeitsmatrix → Elementlastvektor
-model = elementeErzeugen(model); % lokale & globale Steifigkeiten pro Stab, Freigaben, Geometrie (model.Stab)
+%% 1) Stabeigenschaften --> Stabsteifigkeitsmatrix --> Elementlastvektor
+model = elementeErzeugen(model);
 
-[DOF, nDOF, model] = dofNummerieren(model); % DOF-Nummerierung
+[DOF, nDOF, model] = dofNummerieren(model);
 
-% 2) Systemknotenlastvektor
+%% 2) Systemknotenlastvektor
 F_sys_Knoten = knotenLastenAssemblieren(model, DOF, nDOF);
 
-% 3) Systemelementlastvektor
+%% 3) Systemelementlastvektor
 [F_sys_Stab, model.Stab] = stabLastenAssemblieren(model, DOF, nDOF);
 
-% 4) Systemlastvektor
+%% 4) Systemlastvektor
 F_sys = F_sys_Knoten - F_sys_Stab;
 
-% 5) Systemsteifigkeitsmatrix
+%% 5) Systemsteifigkeitsmatrix
 K_sys = systemSteifigkeitAssemblieren(model, DOF, nDOF);
 
-% 6) Federn
+%% 6) Federn
 K_sys = federnHinzufuegen(K_sys, model.Feder, DOF, nDOF, model.Info.nKnotenDOF);
 
-% 7) Systemdeformationen (& Einflusslinie)
+%% 7) Systemdeformationen (& Einflusslinie)
 if isfield(model, 'gew_output') && model.gew_output == 2 && ...
         isfield(model, 'Einflusslinie') && model.Einflusslinie.TypEL ~= 4
 
@@ -46,10 +46,10 @@ else
     U_sys = verschiebungenEinsammeln(u_free, kond.known, kond.f, nDOF);
 end
 
-% 8) Nachrechnung Stabgrössen
+%% 8) Nachrechnung Stabgrössen
 model.Stab = stabkraefteBerechnen(model.Stab, U_sys, model.Info.nKnotenDOF);
 
-% 9) Auflagerreaktionen
+%% 9) Auflagerreaktionen
 [Reaktionen, SPCout, FederOut] = auflagerreaktionenBerechnen(K_sys, U_sys, F_sys_Knoten, F_sys_Stab, model.SPC, model.Feder, DOF, model.Info.nKnotenDOF);
 
 % Ergebnis-Struktur zurückgeben
