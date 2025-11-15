@@ -65,11 +65,9 @@ end
 %Randbedinungen die nur einen DOF betreffen (SPC=single-point constraint)
 out.SPC = struct('node', {}, 'dir', {}, 'val', {});
 nSPC = 0;
+
 for i = 1:out.Info.nLager
-    flags = in.Lager.Lagerung(i, :);
-    if iscell(flags), flags = flags{1}; end
-    flags = logical(flags);
-    t = find(flags, 1, 'first'); % one-hot index 1..6 (or [])
+    t = in.Lager.Lagerung(i);
     switch t
         case 1 % voll eingespannt
             nSPC = nSPC + 3;
@@ -87,6 +85,7 @@ for i = 1:out.Info.nLager
             % no/invalid type -> zero added; validator will complain later
     end
 end
+
 out.SPC(nSPC).node = [];
 out.SPC(nSPC).dir = [];
 out.SPC(nSPC).val = [];
@@ -94,10 +93,7 @@ out.SPC(nSPC).val = [];
 Idx = 1;
 for i = 1:out.Info.nLager
     node = in.Lager.Knoten(i);
-    flags = in.Lager.Lagerung(i, :);
-    if iscell(flags), flags = flags{1}; end
-    flags = logical(flags);
-    t = find(flags, 1, 'first'); % one-hot type
+    t    = in.Lager.Lagerung(i);
 
     switch t
         case 1 % voll eingespannt -> 1,2,3

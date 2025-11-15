@@ -89,8 +89,8 @@ end
 
 %Lager
 for i = 1:size(Lager, 1)
-    type = find(Lager(i, :).Lagerung);
-    node = Lager(i, :).Knoten;
+    type = Lager.Lagerung(i);
+    node = Lager.Knoten(i);
     centre = [Knoten(node).xPos; Knoten(node).yPos];
 
     switch type
