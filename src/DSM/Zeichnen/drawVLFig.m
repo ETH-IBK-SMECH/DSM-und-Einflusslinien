@@ -3,16 +3,16 @@ function [out] = drawVLFig(model)
 Knoten = model.Analyse.Knoten;
 KnotenKORD = table2array(struct2table(Knoten));
 
-Staebe = model.Input.Staebe;
-StaebeS = Staebe.StartKnoten;
-StaebeE = Staebe.EndKnoten;
-StaebeKORD = [StaebeS, StaebeE];
+Stab    = model.Analyse.Stab;
+nStaebe = numel(Stab);
+StaebeKORD = zeros(nStaebe, 2);
+for i = 1:nStaebe
+    StaebeKORD(i, :) = [Stab(i).sNode, Stab(i).eNode];
+end
 
-Stab = model.Analyse.Stab;
 VLStab = model.Output.VLStab;
-nStaebe = size(Stab, 2);
 
-Einflusslinie = model.Input.Einflusslinie;
+Einflusslinie = model.Analyse.Einflusslinie;
 
 t = tiledlayout(2, 1);
 title(t, "Einflusslinie");

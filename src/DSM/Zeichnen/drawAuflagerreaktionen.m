@@ -1,8 +1,11 @@
 function [out] = drawAuflagerreaktionen(Model)
 
 
-Knoten = Model.Input.Knoten;
-Knoten = table2struct(Knoten);
+
+Knoten = struct( ...
+    'xPos', num2cell([Model.Analyse.Knoten.x]), ...
+    'yPos', num2cell([Model.Analyse.Knoten.y]));
+
 SPC = Model.Analyse.SPC;
 meanL = mean([Model.Analyse.Stab.L]);
 Feder = Model.Analyse.Feder;
