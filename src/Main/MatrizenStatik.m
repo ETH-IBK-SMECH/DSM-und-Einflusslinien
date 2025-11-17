@@ -63,7 +63,18 @@ try
 
 catch ME
     status = -1;
-    Meldung = ME.message;
+    %Meldung = ME.message;
+    
+    % Volle Fehlermeldung inkl. Stack in Meldung speichern
+    Meldung = getReport(ME, 'extended', 'hyperlinks', 'on');
+
+    % Zusätzlich direkt im Command Window anzeigen:
+    fprintf(2, '%s\n', Meldung);  % 2 = stderr (rot im Command Window)
+
+    % Optional: für Debug-Sessions trotzdem Fehler werfen
+    if ~isfield(opts, 'suppressErrors') || ~opts.suppressErrors
+        rethrow(ME); % oder: rethrowAsCaller(ME);
+    end
 end
 end
 %% Helpers

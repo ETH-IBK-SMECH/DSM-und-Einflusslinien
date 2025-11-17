@@ -193,7 +193,7 @@ end
 
 for i = 1:nStaebe
 
-    if (Staebe(i).sRelease == 3 && momentengelenk(Staebe(i).StartKnoten))
+    if (Staebe(i).sRelease == 3 & momentengelenk(Staebe(i).StartKnoten))
         centre = [Knoten(Staebe(i).StartKnoten).xPos; Knoten(Staebe(i).StartKnoten).yPos];
         drawGelenk(3, centre, meanL);
     elseif (Staebe(i).sRelease == 3)
@@ -202,7 +202,7 @@ for i = 1:nStaebe
         centre = [Knoten(Staebe(i).StartKnoten).xPos; Knoten(Staebe(i).StartKnoten).yPos] + centre;
         drawGelenk(3, centre, meanL);
     end
-    if (Staebe(i).eRelease == 3 && momentengelenk(Staebe(i).EndKnoten))
+    if (Staebe(i).eRelease == 3 & momentengelenk(Staebe(i).EndKnoten))
         centre = [Knoten(Staebe(i).EndKnoten).xPos; Knoten(Staebe(i).EndKnoten).yPos];
         drawGelenk(3, centre, meanL);
     elseif (Staebe(i).eRelease == 3)
