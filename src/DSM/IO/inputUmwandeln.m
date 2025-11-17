@@ -36,17 +36,18 @@ for i = 1:nStaebe
     out.Stab(i).eNode = in.Staebe.EndKnoten(i);
     %Querschnitt
     QsIdx = in.Staebe.Querschnitt(i);
-    out.Stab(i).E = in.Querschnitte.EModul(QsIdx); %E-Modul
+    MatIdx = in.Querschnitte.Material(QsIdx);
+    out.Stab(i).E = in.Material.EModul(MatIdx); %E-Modul
     out.Stab(i).A = in.Querschnitte.Flaeche(QsIdx); %Querschnittsfläche
     out.Stab(i).Iy = in.Querschnitte.Traegheitsmoment(QsIdx); %Trägheitsmoment
-    out.Stab(i).EAinf = in.Querschnitte.dehnstarr(QsIdx); %ist denkstarr
+    out.Stab(i).EAinf = in.Querschnitte.dehnstarr(QsIdx); %ist dehnstarr
     out.Stab(i).EIinf = in.Querschnitte.biegesteif(QsIdx); %ist biegesteif
-    out.Stab(i).sRelease = in.Querschnitte.GelenkStabAnfang(QsIdx); %Stabstartgelenk (1=N; 2=V; 3=M)
-    out.Stab(i).eRelease = in.Querschnitte.GelenkStabende(QsIdx); %Stabendgelenk   (1=N; 2=V; 3=M)
-    if out.Stab(i).sRelease == 0;
+    out.Stab(i).sRelease = in.Staebe.GelenkStabAnfang(i); %Stabstartgelenk (1=N; 2=V; 3=M)
+    out.Stab(i).eRelease = in.Staebe.GelenkStabende(i); %Stabendgelenk   (1=N; 2=V; 3=M)
+    if out.Stab(i).sRelease == 0
         out.Stab(i).sRelease = [];
     end %Stabendgelenk (0=keines --> leer = [] )
-    if out.Stab(i).eRelease == 0;
+    if out.Stab(i).eRelease == 0
         out.Stab(i).eRelease = [];
     end %Stabendgelenk (0=keines --> leer = [] )
 end
