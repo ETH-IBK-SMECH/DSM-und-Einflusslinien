@@ -2,6 +2,7 @@ function [Model, status, Meldung, issues] = MatrizenStatik(inputSource, opts)
 % Vereinheitlichter Orchestrator für die Berechnung
 % opts.mode         : "solve" (Standard) | "check" (nur Validierung, keine Berechnung)
 % opts.renderOutput : logischer Wert (Standard true)
+warning off backtrace
 
 if nargin < 2, opts = struct(); end
 opts = local_defaults(opts, struct( ...
@@ -11,7 +12,7 @@ opts = local_defaults(opts, struct( ...
 
 status = 1;
 Meldung = '';
-issues = struct([]); % für zukünftige Erweiterungen (z. B. Warnungen)
+issues = {};
 Model = struct();
 
 try
@@ -41,7 +42,7 @@ try
     %% 3) Strikte Überprüfung auf Analyseebene
     Model.Analyse = sanitizeAnalysisModel(Model.Analyse, struct('strict', true));
     [okA, anaIssues] = validateAnalysisModel(Model.Analyse, struct('requireFullModel', true));
-    issues = [issues, anaIssues]; %#ok<AGROW>
+    issues = [issues, anaIssues(:).']; %#ok<AGROW>
     if ~okA
         error('Analyse-Validierung fehlgeschlagen:\n%s', local_issuesToString(anaIssues));
     end
@@ -60,7 +61,6 @@ try
     if opts.renderOutput
         outputDarstellung(Model);
     end
-
 catch ME
     status = -1;
     %Meldung = ME.message;

@@ -1,4 +1,4 @@
-function [ok, issues] = validateAnalysisModel(A, opts)
+function [ok, issues, warnings] = validateAnalysisModel(A, opts)
 % Validate (Analyse-Ebene)
 % Ziel: Strikte, modellweite Prüfung der Selbstkonsistenz; KEINE Mutationen.
 % Rückgabe:
@@ -94,6 +94,49 @@ for i = 1:numel(A.SPC)
     end
     if ~isfield(C, 'val') || ~isfinite(C.val)
         issues{end+1} = sprintf('ERROR: SPC %d: val fehlt/ungültig.', i);
+    end
+end
+
+% ---- Statischen Unbestimmtheit prüfen (2D-Rahmen) ----
+if ndof == 3
+    % n: Anzahl der Festkörper (hier: Stäbe als starre Körper)
+    n_bodies = numel(A.Stab);
+
+    % r: Anzahl der Auflagerreaktionen (jede SPC-Komponente gibt eine Reaktion)
+    r = numel(A.SPC);
+
+    % p: Anzahl unbekannter interner Bindungskräfte aus Biegegelenken
+    nK = numel(A.Knoten);
+    hingeCountPerNode = zeros(nK,1);
+
+    for i = 1:numel(A.Stab)
+        s = A.Stab(i);
+
+        if isfield(s, 'sRelease') && any(s.sRelease == 3)
+            if s.sNode >= 1 && s.sNode <= nK
+                hingeCountPerNode(s.sNode) = hingeCountPerNode(s.sNode) + 1;
+            end
+        end
+        if isfield(s, 'eRelease') && any(s.eRelease == 3)
+            if s.eNode >= 1 && s.eNode <= nK
+                hingeCountPerNode(s.eNode) = hingeCountPerNode(s.eNode) + 1;
+            end
+        end
+    end
+
+    p = 0;
+    for k = 1:nK
+        if hingeCountPerNode(k) > 0
+            % Biegegelenk am Knoten mit k Balken: p_k = 2*(k-1)
+            p = p + 2*(hingeCountPerNode(k) - 1);
+        end
+    end
+
+    h_i = p + r - 3*n_bodies;
+
+    if h_i < 0
+        warning(['Nach hi = p + r - 3n ergibt sich h_i = %d < 0. ', ...
+             'Es liegt vermutlich ein Mechanismus vor (Lagerbedingungen nicht ausreichend).'], h_i);
     end
 end
 
