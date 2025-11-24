@@ -1,7 +1,6 @@
 function [out] = drawAuflagerreaktionen(Model)
 
 
-
 Knoten = struct( ...
     'xPos', num2cell([Model.Analyse.Knoten.x]), ...
     'yPos', num2cell([Model.Analyse.Knoten.y]));

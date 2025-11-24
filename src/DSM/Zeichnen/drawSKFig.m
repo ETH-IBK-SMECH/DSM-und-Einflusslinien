@@ -3,7 +3,7 @@ function [out] = drawSKFig(model)
 Knoten = model.Analyse.Knoten;
 KnotenKORD = table2array(struct2table(Knoten));
 
-Stab    = model.Analyse.Stab;
+Stab = model.Analyse.Stab;
 nStaebe = numel(Stab);
 StaebeKORD = zeros(nStaebe, 2);
 for i = 1:nStaebe
