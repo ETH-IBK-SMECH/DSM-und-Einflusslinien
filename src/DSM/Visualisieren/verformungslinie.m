@@ -2,6 +2,7 @@ function [out] = verformungslinie(analyseModel)
 
 Stab = analyseModel.Stab;
 nStaebe = size(Stab, 2);
+
 %% Verformungslinie mit shape functions aus Kassimali S.172
 
 for i = 1:nStaebe
@@ -26,6 +27,7 @@ for i = 1:nStaebe
     VLStab(i).u = u;
 
 end
+
 %% Plotten
 
 t = tiledlayout(nStaebe, 1);
@@ -46,6 +48,7 @@ for i = 1:nStaebe
     axis ij;
 
 end
+
 %% Dr Rescht no usgääh
 % fausi öbbis im output darstöue wie vrschiebige
 out.VLStab = VLStab;

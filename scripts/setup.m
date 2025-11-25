@@ -5,6 +5,7 @@ rehash;
 projectRoot = fileparts(fileparts(mfilename('fullpath'))); % -> project-root/scripts
 addpath(projectRoot);
 addpath(genpath(fullfile(projectRoot, 'src'))); % all code
+addpath(genpath(fullfile(projectRoot, 'Beispiele')));
 
 % === Add MBeautifier ===
 beautifierPath = fullfile(projectRoot, 'scripts', 'MBeautifier-1.4.0');

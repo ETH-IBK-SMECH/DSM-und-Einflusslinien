@@ -3,11 +3,13 @@ function out = schnittkraefte(analyseModel)
 %welche fields verwendet werden
 %mau do ineschriibe mit Stab = analyseModel.Stab etc
 %ds cha när immerno ine funktion packt wärde
+
 %% Vereinfachung
 Stab = analyseModel.Stab;
 StabLast = analyseModel.StabLast;
 nStaebe = size(Stab, 2);
 nStabLasten = size(StabLast, 2);
+
 %% Stablasten am Stab zuordnen und neues struct SKStab iniziieren
 
 for i = 1:nStaebe
@@ -23,6 +25,7 @@ if isfield(StabLast, 'stab')
         SKStab(stabIdx).Lasten(end+1) = i;
     end
 end
+
 %% kritische Punkte für N,V,M und die entsprechenden Lastfälle geordnet
 
 for i = 1:nStaebe
@@ -92,6 +95,7 @@ for i = 1:nStaebe
 
 
 end
+
 %% N und V Array erstellen für kritische Punkte
 
 for i = 1:nStaebe
@@ -131,7 +135,9 @@ for i = 1:nStaebe
     end
 
 end
+
 %% schauen wo überall V = 0, um dies als kritische Punkte für M einzufügen
+
 %% M Array
 
 for i = 1:nStaebe
@@ -169,6 +175,7 @@ for i = 1:nStaebe
 
 
 end
+
 %% Skalierung
 
 for i = 1:nStaebe
@@ -185,6 +192,7 @@ for i = 1:nStaebe
     SKStab(i).KP_M = [0, SKStab(i).KP_M, SKStab(i).L];
     SKStab(i).SK_M = [0, SKStab(i).SK_M, 0];
 end
+
 %% zurück überweisen
 out.StabLast = StabLast;
 out.SKStab = SKStab;
