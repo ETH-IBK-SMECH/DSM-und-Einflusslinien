@@ -47,17 +47,38 @@ try
         error('Analyse-Validierung fehlgeschlagen:\n%s', local_issuesToString(anaIssues));
     end
     %% 4) Optionale Vorbereitung für Einflusslinien
-    if isfield(Model.Analyse, 'gew_output') && Model.Analyse.gew_output == 2
-        Model.Analyse = modelFuerEinflusslinie(Model.Analyse);
+    isEinfluss = isfield(Model.Analyse, 'gew_output') && Model.Analyse.gew_output == 2;
+
+    if isEinfluss
+        % Eigenes Analyse-Modell NUR für die Einflusslinie
+        % (Original bleibt unangetastet für die Darstellung)
+        Model.Analyse_EL = modelFuerEinflusslinie(Model.Analyse);
     end
+
     %% 5) Nur-Check-Modus (z.B. für Unit-tests)
     if strcmpi(opts.mode, "check")
         return;
     end
+
     %% 6) Lösen (reine Mechanik, keine Ein-/Ausgabe)
-    Model.Analyse = DirectStiffnessMethod(Model.Analyse);
+    if isEinfluss
+        % Einflusslinie mit dem modifizierten Modell rechnen
+        % 1) Originalmodell lösen -> braucht drawOriginalFig (L, R, etc.)
+        Model.Analyse.gew_output = 1;
+        Model.Analyse    = DirectStiffnessMethod(Model.Analyse);
+        Model.Analyse.gew_output = 2;
+        % 2) Einflusslinien-Modell lösen -> für VL-Ausgabe
+        Model.Analyse_EL   = DirectStiffnessMethod(Model.Analyse_EL);
+        analyseForOutput   = Model.Analyse_EL;
+    else
+        % Normale Schnittkraft-/Reaktions-Berechnung
+        Model.Analyse      = DirectStiffnessMethod(Model.Analyse);
+        analyseForOutput   = Model.Analyse;
+    end
+
     %% 7) Ergebnisse zusammenstellen + (optional) darstellen
-    Model.Output = zusammenSetzen(Model.Analyse);
+    Model.Output = zusammenSetzen(analyseForOutput);
+
     if opts.renderOutput
         outputDarstellung(Model);
     end

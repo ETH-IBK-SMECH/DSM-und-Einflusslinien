@@ -1,4 +1,4 @@
-function [ok, issues, warnings] = validateAnalysisModel(A, opts)
+function [ok, issues] = validateAnalysisModel(A, opts)
 % Validate (Analyse-Ebene)
 % Ziel: Strikte, modellweite Prüfung der Selbstkonsistenz; KEINE Mutationen.
 % Rückgabe:
@@ -41,6 +41,27 @@ for i = 1:nK
     end
 end
 
+% ---- Knoten mit identischen Koordinaten erkennen ----
+if nK > 1
+    x = arrayfun(@(K) K.x, A.Knoten(:));
+    y = arrayfun(@(K) K.y, A.Knoten(:));
+
+    XY   = [x(:), y(:)];
+    tolC = 1e-12;  % oder etwas grösser, falls nötig
+
+    % Paare mit "praktisch gleichen" Koordinaten finden
+    for i = 1:nK-1
+        for j = i+1:nK
+            if hypot(XY(i,1) - XY(j,1), XY(i,2) - XY(j,2)) < tolC
+                issues{end+1} = sprintf( ...
+                    'ERROR: Knoten %d und %d haben identische Koordinaten (doppelte Knoten).', ...
+                    i, j);
+            end
+        end
+    end
+end
+
+
 % ---- Stäbe prüfen ----
 for i = 1:numel(A.Stab)
     s = A.Stab(i);
@@ -80,6 +101,48 @@ for i = 1:numel(A.Stab)
     end
 end
 
+% ---- Mehrere Stäbe zwischen denselben Knoten erkennen ----
+if numel(A.Stab) > 1
+    % Nur Stäbe mit gültigen Knotenindizes betrachten
+    validMask = false(1, numel(A.Stab));
+    for i = 1:numel(A.Stab)
+        s = A.Stab(i);
+        if isfield(s, 'sNode') && isfield(s, 'eNode') && ...
+                isfinite(s.sNode) && isfinite(s.eNode) && ...
+                s.sNode >= 1 && s.sNode <= nK && ...
+                s.eNode >= 1 && s.eNode <= nK
+            validMask(i) = true;
+        end
+    end
+
+    beamIdx = find(validMask);
+    if ~isempty(beamIdx)
+        sNodes = [A.Stab(validMask).sNode];
+        eNodes = [A.Stab(validMask).eNode];
+
+        % (1,2) und (2,1) sollen als gleich gelten -> Enden sortieren
+        ends = sort([sNodes; eNodes], 1).'; % n x 2
+
+        % Gleiche (sNode,eNode)-Paare finden
+        [uniquePairs, ~, ic] = unique(ends, 'rows');
+        counts = accumarray(ic, 1);
+
+        dupGroups = find(counts > 1); % Indizes der Paare, die mehrfach vorkommen
+
+        for g = dupGroups.'
+            % Alle Stäbe, die dieses Knotenpaar haben
+            theseBeams = beamIdx(ic == g);
+            k1 = uniquePairs(g, 1);
+            k2 = uniquePairs(g, 2);
+
+            issues{end+1} = sprintf( ...
+                'ERROR: Mehrere Stäbe zwischen denselben Knoten (%d–%d): Stäbe [%s].', ...
+                k1, k2, num2str(theseBeams));
+        end
+    end
+end
+
+
 % ---- Lager (SPC) prüfen ----
 if isempty(A.SPC)
     issues{end+1} = 'ERROR: Keine Lager (SPC) definiert – System vermutlich kinematisch.';
@@ -97,6 +160,39 @@ for i = 1:numel(A.SPC)
     end
 end
 
+% ---- Mehrere Lagerbedingungen am selben Knoten / DOF erkennen ----
+if ~isempty(A.SPC)
+    nodes = [A.SPC.node];
+    dirs  = [A.SPC.dir];
+
+    % Nur gültige Indizes betrachten
+    valid = isfinite(nodes) & isfinite(dirs) & ...
+            nodes >= 1 & nodes <= nK & ...
+            dirs  >= 1 & dirs  <= ndof;
+
+    nodes = nodes(valid);
+    dirs  = dirs(valid);
+
+    if ~isempty(nodes)
+        % Alle (node, dir)-Paare
+        pairs = [nodes(:), dirs(:)];          % N x 2
+
+        % Mehrfach vorkommende Paare finden
+        [uniqPairs, ~, ic] = unique(pairs, 'rows');
+        counts = accumarray(ic, 1);
+
+        dupIdx = find(counts > 1);
+        for j = dupIdx.'
+            k = uniqPairs(j, 1);
+            d = uniqPairs(j, 2);
+            issues{end+1} = sprintf( ...
+                'ERROR: Mehrere Lagerbedingungen am selben Knoten und in derselben Richtung (Knoten %d, Richtung %d).', ...
+                k, d);
+        end
+    end
+end
+
+
 % ---- Statischen Unbestimmtheit prüfen (2D-Rahmen) ----
 if ndof == 3
     % n: Anzahl der Festkörper (hier: Stäbe als starre Körper)
@@ -107,7 +203,7 @@ if ndof == 3
 
     % p: Anzahl unbekannter interner Bindungskräfte aus Biegegelenken
     nK = numel(A.Knoten);
-    hingeCountPerNode = zeros(nK,1);
+    hingeCountPerNode = zeros(nK, 1);
 
     for i = 1:numel(A.Stab)
         s = A.Stab(i);
@@ -128,15 +224,15 @@ if ndof == 3
     for k = 1:nK
         if hingeCountPerNode(k) > 0
             % Biegegelenk am Knoten mit k Balken: p_k = 2*(k-1)
-            p = p + 2*(hingeCountPerNode(k) - 1);
+            p = p + 2 * (hingeCountPerNode(k) - 1);
         end
     end
 
-    h_i = p + r - 3*n_bodies;
+    h_i = p + r - 3 * n_bodies;
 
     if h_i < 0
         warning(['Nach hi = p + r - 3n ergibt sich h_i = %d < 0. ', ...
-             'Es liegt vermutlich ein Mechanismus vor (Lagerbedingungen nicht ausreichend).'], h_i);
+            'Es liegt vermutlich ein Mechanismus vor (Lagerbedingungen nicht ausreichend).'], h_i);
     end
 end
 
@@ -173,20 +269,72 @@ allowedTyp = [1, 2, 3, 4, 5, 6];
 for i = 1:numel(A.StabLast)
     SL = A.StabLast(i);
     if ~isfield(SL, 'stab') || ~isfinite(SL.stab) || ~(SL.stab >= 1 && SL.stab <= numel(A.Stab))
-        issues{end+1} = sprintf('ERROR: Stablast %d: Stabindex ungültig.', i);
+        issues{end+1} = sprintf('ERROR: Stab/Verteile Last %d: Stabindex ungültig.', i);
     end
     if ~isfield(SL, 'typ') || ~ismember(SL.typ, allowedTyp)
-        issues{end+1} = sprintf('ERROR: Stablast %d: unbekannter Typ (erlaubt: [%s]).', ...
+        issues{end+1} = sprintf('ERROR: Stab/Verteilte Last %d: unbekannter Typ (erlaubt: [%s]).', ...
             i, sprintf('%d ', allowedTyp));
     end
     % Optional: sDist/eDist in [0,1] (falls als Längenanteil definiert)
     if isfield(SL, 'sDist') && ~isempty(SL.sDist) && (~isfinite(SL.sDist) || SL.sDist < 0 || SL.sDist > 1)
-        issues{end+1} = sprintf('ERROR: Stablast %d: sDist muss in [0,1] liegen.', i);
+        issues{end+1} = sprintf('ERROR: Stab/Verteilte Last %d: sDist muss in [0,1] liegen.', i);
     end
     if isfield(SL, 'eDist') && ~isempty(SL.eDist) && (~isfinite(SL.eDist) || SL.eDist < 0 || SL.eDist > 1)
-        issues{end+1} = sprintf('ERROR: Stablast %d: eDist muss in [0,1] liegen.', i);
+        issues{end+1} = sprintf('ERROR: Stab/Verteilte Last %d: eDist muss in [0,1] liegen.', i);
     end
 end
+
+% ---- Isolierte / ungenutzte Knoten erkennen ----
+if nK > 0
+    used = false(nK,1);
+
+    % Stäbe
+    for i = 1:numel(A.Stab)
+        s = A.Stab(i);
+        if isfield(s,'sNode') && isfinite(s.sNode) && s.sNode >= 1 && s.sNode <= nK
+            used(s.sNode) = true;
+        end
+        if isfield(s,'eNode') && isfinite(s.eNode) && s.eNode >= 1 && s.eNode <= nK
+            used(s.eNode) = true;
+        end
+    end
+
+    % Federn
+    for i = 1:numel(A.Feder)
+        S = A.Feder(i);
+        if isfield(S,'node') && isfinite(S.node) && S.node >= 1 && S.node <= nK
+            used(S.node) = true;
+        end
+    end
+
+    % SPC
+    for i = 1:numel(A.SPC)
+        C = A.SPC(i);
+        if isfield(C,'node') && isfinite(C.node) && C.node >= 1 && C.node <= nK
+            used(C.node) = true;
+        end
+    end
+
+    % Knotenlasten
+    for i = 1:numel(A.KnotenLast)
+        L = A.KnotenLast(i);
+        if isfield(L,'node') && isfinite(L.node) && L.node >= 1 && L.node <= nK
+            used(L.node) = true;
+        end
+    end
+
+    % Knoten, die nirgends verwendet werden
+    unusedNodes = find(~used);
+
+    if ~isempty(unusedNodes)
+        % als Warnung behandeln:
+
+        
+            warning(['Die folgenden Knoten sind ungenutzt (kein Stab, keine Feder, kein Lager, keine Last): ', ...
+            num2str(unusedNodes)]);
+    end
+end
+
 
 % ---- Kondensation prüfen ----
 if isfield(A, 'Kondensation') && ~isempty(A.Kondensation)
