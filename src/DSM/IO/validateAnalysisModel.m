@@ -161,78 +161,46 @@ for i = 1:numel(A.SPC)
 end
 
 % ---- Mehrere Lagerbedingungen am selben Knoten / DOF erkennen ----
-if ~isempty(A.SPC)
-    nodes = [A.SPC.node];
-    dirs  = [A.SPC.dir];
 
-    % Nur gültige Indizes betrachten
-    valid = isfinite(nodes) & isfinite(dirs) & ...
+if ~isempty(A.SPC)
+    if isfield(A.SPC, 'val')
+        vals = [A.SPC.val];          
+    else
+        vals = zeros(size(A.SPC));
+    end
+
+    tol = 1e-12;                      % kleine Toleranz für "gleich 0"
+    isDirichlet = abs(vals) < tol;
+
+    SPC0 = A.SPC(isDirichlet);        % nur u=0-SPCs
+    if ~isempty(SPC0)
+        nodes = [SPC0.node];
+        dirs  = [SPC0.dir];
+
+        % Nur gültige Indizes betrachten
+        valid = isfinite(nodes) & isfinite(dirs) & ...
             nodes >= 1 & nodes <= nK & ...
             dirs  >= 1 & dirs  <= ndof;
 
-    nodes = nodes(valid);
-    dirs  = dirs(valid);
+        nodes = nodes(valid);
+        dirs  = dirs(valid);
 
-    if ~isempty(nodes)
-        % Alle (node, dir)-Paare
-        pairs = [nodes(:), dirs(:)];          % N x 2
+        if ~isempty(nodes)
+            % Alle (node, dir)-Paare
+            pairs = [nodes(:), dirs(:)];          % N x 2
 
-        % Mehrfach vorkommende Paare finden
-        [uniqPairs, ~, ic] = unique(pairs, 'rows');
-        counts = accumarray(ic, 1);
+            % Mehrfach vorkommende Paare finden
+            [uniqPairs, ~, ic] = unique(pairs, 'rows');
+            counts = accumarray(ic, 1);
 
-        dupIdx = find(counts > 1);
-        for j = dupIdx.'
-            k = uniqPairs(j, 1);
-            d = uniqPairs(j, 2);
-            issues{end+1} = sprintf( ...
-                'ERROR: Mehrere Lagerbedingungen am selben Knoten und in derselben Richtung (Knoten %d, Richtung %d).', ...
-                k, d);
-        end
-    end
-end
-
-
-% ---- Statischen Unbestimmtheit prüfen (2D-Rahmen) ----
-if ndof == 3
-    % n: Anzahl der Festkörper (hier: Stäbe als starre Körper)
-    n_bodies = numel(A.Stab);
-
-    % r: Anzahl der Auflagerreaktionen (jede SPC-Komponente gibt eine Reaktion)
-    r = numel(A.SPC);
-
-    % p: Anzahl unbekannter interner Bindungskräfte aus Biegegelenken
-    nK = numel(A.Knoten);
-    hingeCountPerNode = zeros(nK, 1);
-
-    for i = 1:numel(A.Stab)
-        s = A.Stab(i);
-
-        if isfield(s, 'sRelease') && any(s.sRelease == 3)
-            if s.sNode >= 1 && s.sNode <= nK
-                hingeCountPerNode(s.sNode) = hingeCountPerNode(s.sNode) + 1;
+            dupIdx = find(counts > 1);
+            for j = dupIdx.'
+                k = uniqPairs(j, 1);
+                d = uniqPairs(j, 2);
+                warning('Mehrere Lagerbedingungen am selben Knoten und in derselben Richtung (Knoten %d, Richtung %d).', ...
+                    k, d);
             end
         end
-        if isfield(s, 'eRelease') && any(s.eRelease == 3)
-            if s.eNode >= 1 && s.eNode <= nK
-                hingeCountPerNode(s.eNode) = hingeCountPerNode(s.eNode) + 1;
-            end
-        end
-    end
-
-    p = 0;
-    for k = 1:nK
-        if hingeCountPerNode(k) > 0
-            % Biegegelenk am Knoten mit k Balken: p_k = 2*(k-1)
-            p = p + 2 * (hingeCountPerNode(k) - 1);
-        end
-    end
-
-    h_i = p + r - 3 * n_bodies;
-
-    if h_i < 0
-        warning(['Nach hi = p + r - 3n ergibt sich h_i = %d < 0. ', ...
-            'Es liegt vermutlich ein Mechanismus vor (Lagerbedingungen nicht ausreichend).'], h_i);
     end
 end
 

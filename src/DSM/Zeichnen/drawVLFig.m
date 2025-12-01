@@ -1,27 +1,18 @@
 function [out] = drawVLFig(model)
 
-% Geometrie für die Einflusslinie:
-%  - falls vorhanden: das speziell vorbereitete Analyse_EL
-%  - sonst: das normale Analyse-Modell
-if isfield(model, 'Analyse_EL')
-    anaGeom = model.Analyse_EL;
-else
-    anaGeom = model.Analyse;
-end
-
-Knoten = anaGeom.Knoten;
+Knoten = model.Analyse.Knoten;
 KnotenKORD = table2array(struct2table(Knoten));
 
-Stab    = anaGeom.Stab;
-nStaebe = numel(Stab);
-StaebeKORD = zeros(nStaebe, 2);
-for i = 1:nStaebe
-    StaebeKORD(i, :) = [Stab(i).sNode, Stab(i).eNode];
-end
+Staebe = model.Input.Staebe;
+StaebeS = Staebe.StartKnoten;
+StaebeE = Staebe.EndKnoten;
+StaebeKORD = [StaebeS, StaebeE];
 
+Stab = model.Analyse.Stab;
 VLStab = model.Output.VLStab;
+nStaebe = size(Stab, 2);
 
-Einflusslinie = model.Analyse.Einflusslinie;
+Einflusslinie = model.Input.Einflusslinie;
 
 t = tiledlayout(2, 1);
 title(t, "Einflusslinie");

@@ -1,51 +1,70 @@
 function [out] = drawOriginalFig(Model)
 
 % Darstellung basierend auf Model.Analyse mit Lager-Typen aus Model.Input
+% Knoten
+Ktab = Model.Input.Knoten;
+if istable(Ktab)
+    Knoten = table2struct(Ktab);
+else
+    % falls schon struct mit x / y:
+    Knoten = Ktab;
+end
 
-Knoten    = struct( ...
-    'xPos', num2cell([Model.Analyse.Knoten.x]), ...
-    'yPos', num2cell([Model.Analyse.Knoten.y]) );
+% sicherstellen, dass xPos/yPos existieren
+if isfield(Knoten, 'x') && ~isfield(Knoten, 'xPos')
+    for i = 1:numel(Knoten)
+        Knoten(i).xPos = Knoten(i).x;
+        Knoten(i).yPos = Knoten(i).y;
+    end
+end
 nKnoten = numel(Knoten);
 
-Stab     = Model.Analyse.Stab;
-nStaebe  = numel(Stab);
+% Analyse-Stäbe behalten wir separat (für EIinf, Releases usw.)
+Stab = Model.Analyse.Stab;
+
+% Staebe = Original-Stäbe aus dem Input
+StabTab = Model.Input.Staebe;
+if istable(StabTab)
+    StabTab = table2struct(StabTab);
+end
+nStaebe = numel(StabTab);
 
 Staebe = struct( ...
-    'StartKnoten', num2cell([Stab.sNode]), ...
-    'EndKnoten',   num2cell([Stab.eNode]) );
+    'StartKnoten', num2cell([StabTab.StartKnoten]), ...
+    'EndKnoten', num2cell([StabTab.EndKnoten]));
 
 % Lager: bleiben aus dem Input
 Lager = Model.Input.Lager;
 
-Feder      = Model.Analyse.Feder;        % struct mit .node, .dir, .val
-KnotenLast = Model.Analyse.KnotenLast;   % struct mit .node, .dir, .val
-StabLast   = Model.Analyse.StabLast;     % struct mit .stab, .dir, .val, .sDist, .eDist, .typ
+Feder = Model.Analyse.Feder; % struct mit .node, .dir, .val
+KnotenLast = Model.Analyse.KnotenLast; % struct mit .node, .dir, .val
+StabLast = Model.Analyse.StabLast; % struct mit .stab, .dir, .val, .sDist, .eDist, .typ
 
 meanL = mean([Stab.L]);
 
 % StabLast_konz und StabLast_vert aus Analysemodell bauen
 StabLast_konz = struct('Stab', {}, 'Richtung', {}, 'Wert', {}, ...
-                       'StartPosition', {}, 'EndPosition', {});
+    'StartPosition', {}, 'EndPosition', {});
 StabLast_vert = struct('Stab', {}, 'Richtung', {}, 'Wert', {}, ...
-                       'StartPosition', {}, 'EndPosition', {});
+    'StartPosition', {}, 'EndPosition', {});
 
 for i = 1:numel(StabLast)
-    isDistributed = ~isempty(StabLast(i).eDist);  % eDist leer = konzentriert
+    isDistributed = ~isempty(StabLast(i).eDist); % eDist leer = konzentriert
 
     if isDistributed
         idx = numel(StabLast_vert) + 1;
-        StabLast_vert(idx).Stab          = StabLast(i).stab;
-        StabLast_vert(idx).Richtung      = StabLast(i).dir;
-        StabLast_vert(idx).Wert          = StabLast(i).val;
+        StabLast_vert(idx).Stab = StabLast(i).stab;
+        StabLast_vert(idx).Richtung = StabLast(i).dir;
+        StabLast_vert(idx).Wert = StabLast(i).val;
         StabLast_vert(idx).StartPosition = StabLast(i).sDist;
-        StabLast_vert(idx).EndPosition   = StabLast(i).eDist;
+        StabLast_vert(idx).EndPosition = StabLast(i).eDist;
     else
         idx = numel(StabLast_konz) + 1;
-        StabLast_konz(idx).Stab          = StabLast(i).stab;
-        StabLast_konz(idx).Richtung      = StabLast(i).dir;
-        StabLast_konz(idx).Wert          = StabLast(i).val;
+        StabLast_konz(idx).Stab = StabLast(i).stab;
+        StabLast_konz(idx).Richtung = StabLast(i).dir;
+        StabLast_konz(idx).Wert = StabLast(i).val;
         StabLast_konz(idx).StartPosition = StabLast(i).sDist;
-        StabLast_konz(idx).EndPosition   = [];
+        StabLast_konz(idx).EndPosition = [];
     end
 end
 
@@ -154,8 +173,8 @@ end
 
 %Feder
 for i = 1:numel(Feder)
-    type   = Feder(i).dir;   % 1=x, 2=y, 3=Rotation
-    node   = Feder(i).node;
+    type = Feder(i).dir; % 1=x, 2=y, 3=Rotation
+    node = Feder(i).node;
     centre = [Knoten(node).xPos; Knoten(node).yPos];
 
     drawFeder(type, centre, 4*meanL);
@@ -167,7 +186,7 @@ momentengelenk = true(1, nKnoten); %nur zum schauen ob momentengelenk für alle 
 
 for i = 1:nStaebe
     startK = Staebe(i).StartKnoten;
-    endK   = Staebe(i).EndKnoten;
+    endK = Staebe(i).EndKnoten;
 
     % dickere Linie für biegesteife Stäbe (EIinf Flag aus Analysemodell)
     if isfield(Stab(i), 'EIinf') && Stab(i).EIinf
