@@ -2,67 +2,107 @@ function [out] = drawOriginalFig(Model)
 
 % Darstellung basierend auf Model.Analyse mit Lager-Typen aus Model.Input
 
-Knoten = struct( ...
+Knoten    = struct( ...
     'xPos', num2cell([Model.Analyse.Knoten.x]), ...
-    'yPos', num2cell([Model.Analyse.Knoten.y]));
+    'yPos', num2cell([Model.Analyse.Knoten.y]) );
 nKnoten = numel(Knoten);
 
-Stab = Model.Analyse.Stab;
-nStaebe = numel(Stab);
+Stab     = Model.Analyse.Stab;
+nStaebe  = numel(Stab);
 
 Staebe = struct( ...
     'StartKnoten', num2cell([Stab.sNode]), ...
-    'EndKnoten', num2cell([Stab.eNode]));
+    'EndKnoten',   num2cell([Stab.eNode]) );
 
 % Lager: bleiben aus dem Input
 Lager = Model.Input.Lager;
 
-Feder = Model.Analyse.Feder; % struct mit .node, .dir, .val
-KnotenLast = Model.Analyse.KnotenLast; % struct mit .node, .dir, .val
-StabLast = Model.Analyse.StabLast; % struct mit .stab, .dir, .val, .sDist, .eDist, .typ
+Feder      = Model.Analyse.Feder;        % struct mit .node, .dir, .val
+KnotenLast = Model.Analyse.KnotenLast;   % struct mit .node, .dir, .val
+StabLast   = Model.Analyse.StabLast;     % struct mit .stab, .dir, .val, .sDist, .eDist, .typ
 
 meanL = mean([Stab.L]);
 
 % StabLast_konz und StabLast_vert aus Analysemodell bauen
 StabLast_konz = struct('Stab', {}, 'Richtung', {}, 'Wert', {}, ...
-    'StartPosition', {}, 'EndPosition', {});
+                       'StartPosition', {}, 'EndPosition', {});
 StabLast_vert = struct('Stab', {}, 'Richtung', {}, 'Wert', {}, ...
-    'StartPosition', {}, 'EndPosition', {});
+                       'StartPosition', {}, 'EndPosition', {});
 
 for i = 1:numel(StabLast)
-    isDistributed = ~isempty(StabLast(i).eDist); % eDist leer = konzentriert
+    isDistributed = ~isempty(StabLast(i).eDist);  % eDist leer = konzentriert
 
     if isDistributed
         idx = numel(StabLast_vert) + 1;
-        StabLast_vert(idx).Stab = StabLast(i).stab;
-        StabLast_vert(idx).Richtung = StabLast(i).dir;
-        StabLast_vert(idx).Wert = StabLast(i).val;
+        StabLast_vert(idx).Stab          = StabLast(i).stab;
+        StabLast_vert(idx).Richtung      = StabLast(i).dir;
+        StabLast_vert(idx).Wert          = StabLast(i).val;
         StabLast_vert(idx).StartPosition = StabLast(i).sDist;
-        StabLast_vert(idx).EndPosition = StabLast(i).eDist;
+        StabLast_vert(idx).EndPosition   = StabLast(i).eDist;
     else
         idx = numel(StabLast_konz) + 1;
-        StabLast_konz(idx).Stab = StabLast(i).stab;
-        StabLast_konz(idx).Richtung = StabLast(i).dir;
-        StabLast_konz(idx).Wert = StabLast(i).val;
+        StabLast_konz(idx).Stab          = StabLast(i).stab;
+        StabLast_konz(idx).Richtung      = StabLast(i).dir;
+        StabLast_konz(idx).Wert          = StabLast(i).val;
         StabLast_konz(idx).StartPosition = StabLast(i).sDist;
-        StabLast_konz(idx).EndPosition = [];
+        StabLast_konz(idx).EndPosition   = [];
     end
 end
 
 %mean konzentrierte Stablasten -> beachte ds momänt in kNmm erfasst wird -> dswege momänt dür 1000 teile
-meanSLk = meanLoadMagnitude(StabLast_konz, 'Richtung', 'Wert');
+if ~isempty(StabLast_konz) && isfield(StabLast_konz, 'Wert')
+    formeanSLk = [];
+    for i = 1:numel(StabLast_konz)
+        if StabLast_konz(i).Richtung == 3
+            formeanSLk(end+1) = StabLast_konz(i).Wert / 1000;
+        else
+            formeanSLk(end+1) = StabLast_konz(i).Wert;
+        end
+    end
+    meanSLk = abs(mean(abs(formeanSLk)));
+else
+    meanSLk = 1;
+end
 
 %mean verteilte Stablasten
-meanSLv = meanLoadMagnitude(StabLast_vert, 'Richtung', 'Wert');
+if ~isempty(StabLast_vert) && isfield(StabLast_vert, 'Wert')
+    formeanSLv = [];
+    for i = 1:numel(StabLast_vert)
+        if StabLast_vert(i).Richtung == 3
+            formeanSLv(end+1) = StabLast_vert(i).Wert / 1000;
+        else
+            formeanSLv(end+1) = StabLast_vert(i).Wert;
+        end
+    end
+    meanSLv = abs(mean(abs(formeanSLv)));
+else
+    meanSLv = 1;
+end
 
 %mean Knotenlasten
-meanKL = meanLoadMagnitude(KnotenLast, 'dir', 'val');
+if ~isempty(KnotenLast) && isfield(KnotenLast, 'val')
+    formeanKL = [];
+    nKL = numel(KnotenLast);
+    for i = 1:nKL
+        if KnotenLast(i).dir == 3
+            formeanKL(end+1) = KnotenLast(i).val / 1000;
+        else
+            formeanKL(end+1) = KnotenLast(i).val;
+        end
+    end
+    meanKL = abs(mean(abs(formeanKL)));
+else
+    meanKL = 1;
+    nKL = 0;
+end
+
 
 %System (Knoten & Stäbe)
 KnotenKORD = table2array(struct2table(Knoten));
 StaebeS = [Staebe.StartKnoten]';
 StaebeE = [Staebe.EndKnoten]';
 StaebeKORD = [StaebeS, StaebeE];
+
 
 patch('Faces', StaebeKORD, 'Vertices', KnotenKORD, 'LineWidth', 1);
 
@@ -114,8 +154,8 @@ end
 
 %Feder
 for i = 1:numel(Feder)
-    type = Feder(i).dir; % 1=x, 2=y, 3=Rotation
-    node = Feder(i).node;
+    type   = Feder(i).dir;   % 1=x, 2=y, 3=Rotation
+    node   = Feder(i).node;
     centre = [Knoten(node).xPos; Knoten(node).yPos];
 
     drawFeder(type, centre, 4*meanL);
@@ -127,7 +167,7 @@ momentengelenk = true(1, nKnoten); %nur zum schauen ob momentengelenk für alle 
 
 for i = 1:nStaebe
     startK = Staebe(i).StartKnoten;
-    endK = Staebe(i).EndKnoten;
+    endK   = Staebe(i).EndKnoten;
 
     % dickere Linie für biegesteife Stäbe (EIinf Flag aus Analysemodell)
     if isfield(Stab(i), 'EIinf') && Stab(i).EIinf
@@ -259,7 +299,7 @@ end
 
 
 %KnotenLast
-for i = 1:numel(KnotenLast)
+for i = 1:nKL
     KnotenIdx = KnotenLast(i).node;
     dir = KnotenLast(i).dir;
     val = KnotenLast(i).val / meanKL;
@@ -289,26 +329,4 @@ for i = 1:numel(KnotenLast)
 end
 
 
-end
-
-function m = meanLoadMagnitude(loads, dirField, valField)
-if isempty(loads) || ~isfield(loads, valField)
-    m = 1;
-    return;
-end
-
-vals = [];
-for i = 1:numel(loads)
-    dir = loads(i).(dirField);
-    v = loads(i).(valField);
-    if dir == 3
-        v = v / 1000;
-    end
-    vals(end+1) = v; %#ok<AGROW>
-end
-
-m = abs(mean(abs(vals)));
-if isnan(m) || m == 0
-    m = 1;
-end
 end

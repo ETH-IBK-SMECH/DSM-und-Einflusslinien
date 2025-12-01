@@ -197,7 +197,7 @@ for i = 1:nStabLastenVerteilt
 end
 
 %Einflusslinie
-out.gew_output = in.gew_output(1);
+out.gew_output = in.gew_output;
 out.Einflusslinie = struct();
 out.Einflusslinie = table2struct(in.Einflusslinie);
 

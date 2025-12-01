@@ -1,9 +1,18 @@
 function [out] = drawVLFig(model)
 
-Knoten = model.Analyse.Knoten;
+% Geometrie für die Einflusslinie:
+%  - falls vorhanden: das speziell vorbereitete Analyse_EL
+%  - sonst: das normale Analyse-Modell
+if isfield(model, 'Analyse_EL')
+    anaGeom = model.Analyse_EL;
+else
+    anaGeom = model.Analyse;
+end
+
+Knoten = anaGeom.Knoten;
 KnotenKORD = table2array(struct2table(Knoten));
 
-Stab = model.Analyse.Stab;
+Stab    = anaGeom.Stab;
 nStaebe = numel(Stab);
 StaebeKORD = zeros(nStaebe, 2);
 for i = 1:nStaebe
