@@ -92,18 +92,34 @@ else
     if ~isfield(K, 'Knoten') || isempty(K.Knoten)
         K.Knoten = [];
     else
-        K.Knoten = unique(K.Knoten(:)).'; % row, unique
+        K.Knoten = K.Knoten(:);
     end
+
+    ndof = analysis.Info.nKnotenDOF;
+    nRows = numel(K.Knoten);
+
     if ~isfield(K, 'KomponentenMaske') || isempty(K.KomponentenMaske)
-        K.KomponentenMaske = false(1, analysis.Info.nKnotenDOF);
+        K.KomponentenMaske = false(nRows, ndof);
     else
-        K.KomponentenMaske = logical(K.KomponentenMaske(:).'); % row logical
-        % If wrong length, pad/truncate non-destructively (true sanitize)
-        if numel(K.KomponentenMaske) ~= analysis.Info.nKnotenDOF
-            m = false(1, analysis.Info.nKnotenDOF);
-            m(1:min(end, numel(K.KomponentenMaske))) = K.KomponentenMaske(1:min(end, numel(K.KomponentenMaske)));
-            K.KomponentenMaske = m;
+        M = logical(K.KomponentenMaske);
+        % Ensure 2D matrix
+        if isvector(M)
+            M = M(:).';        % 1 x ndof
         end
+        % Adjust columns to ndof
+        if size(M,2) ~= ndof
+            tmp = false(size(M,1), ndof);
+            tmp(:,1:min(ndof,size(M,2))) = M(:,1:min(ndof,size(M,2)));
+            M = tmp;
+        end
+        % Adjust number of rows to number of Knoten
+        if size(M,1) ~= nRows
+            % non-destructive: resize but keep as much as possible
+            tmp = false(nRows, ndof);
+            tmp(1:min(nRows,size(M,1)), :) = M(1:min(nRows,size(M,1)), :);
+            M = tmp;
+        end
+        K.KomponentenMaske = M;
     end
     analysis.Kondensation = K;
 end

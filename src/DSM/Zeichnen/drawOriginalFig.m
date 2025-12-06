@@ -237,8 +237,10 @@ end
 %StabLasten_vert
 for i = 1:numel(StabLast_vert)
     StabIdx = StabLast_vert(i).Stab;
-    dir = StabLast_vert(i).Richtung;
-    val = StabLast_vert(i).Wert / meanSLv;
+    dir  = StabLast_vert(i).Richtung;
+    phys = StabLast_vert(i).Wert;  
+
+    val = phys / meanSLv;           
     sDist = StabLast_vert(i).StartPosition;
     eDist = StabLast_vert(i).EndPosition;
     LArr = val * 0.125 * meanL;
@@ -248,13 +250,15 @@ for i = 1:numel(StabLast_vert)
     L = Staebe(StabIdx).L;
 
     for j = linspace(sDist*L, eDist*L, 6)
-        p1 = [sDist * L; 0] + [j; 0];
-
+        %p1 = [sDist * L; 0] + [j; 0];
+        p1 = [j; 0];
         switch dir
             case 1
-                p0 = [sDist * L - LArr + j; 0];
+                %p0 = [sDist * L - LArr + j; 0];
+                p0 = [j - LArr; 0];
             case 2
-                p0 = [sDist * L + j; -LArr];
+                %p0 = [sDist * L + j; -LArr];
+                p0 = [j; -LArr];
         end
 
         p1 = SKKord + R' * p1;
@@ -271,6 +275,14 @@ for i = 1:numel(StabLast_vert)
         eKL = SKKord + R' * eKordLine;
 
         line([sKL(1), eKL(1)], [sKL(2), eKL(2)], 'color', 'b', 'LineWidth', 1.5);
+        center   = (sKL + eKL) / 2;
+        ptext    = getTextPos(center, dir, val, meanL);
+        text(ptext(1), ptext(2), num2str(StabLast_vert(i).Wert));
+    elseif dir == 1
+        centerLoc = [ (sDist + eDist)/2 * L; 0 ];      
+        center    = SKKord + R' * centerLoc;          
+        ptext     = getTextPos(center, dir, val, meanL);
+        text(ptext(1), ptext(2), num2str(StabLast_vert(i).Wert));
     end
 
 
@@ -280,8 +292,14 @@ end
 %StabLasten_konz
 for i = 1:numel(StabLast_konz)
     StabIdx = StabLast_konz(i).Stab;
-    dir = StabLast_konz(i).Richtung;
-    val = StabLast_konz(i).Wert / meanSLk;
+    dir  = StabLast_konz(i).Richtung;
+    phys = StabLast_konz(i).Wert;
+
+    if dir == 3
+        phys = phys / 1000;          % kNmm -> kNm 
+    end
+
+    val = phys / meanSLk;
     sDist = StabLast_konz(i).StartPosition;
     LArr = val * 0.25 * meanL;
 
@@ -306,13 +324,16 @@ for i = 1:numel(StabLast_konz)
             p0 = SKKord + R' * p0;
 
             drawArrow2(p0, p1, 'r', meanL);
-        case 3
-            if val >= 10
-                val = val / 1000;
-            end
-            radius = val * meanL * 0.125;
+            basePoint = (p0 + p1) / 2;
+            ptext     = getTextPos(basePoint, dir, val, meanL);
+            text(ptext(1), ptext(2), num2str(StabLast_konz(i).Wert));
+        case 3     
+            radius = abs(val) * meanL * 0.125;
 
             drawCircularArrow(radius, p1, sign(val), 'r');
+            basePoint = p1;
+            ptext     = getTextPos(basePoint, 3, val, meanL);
+            text(ptext(1), ptext(2), num2str(StabLast_konz(i).Wert));
     end
 end
 
@@ -320,12 +341,20 @@ end
 %KnotenLast
 for i = 1:nKL
     KnotenIdx = KnotenLast(i).node;
-    dir = KnotenLast(i).dir;
-    val = KnotenLast(i).val / meanKL;
+    dir  = KnotenLast(i).dir;
+    phys = KnotenLast(i).val;
+
+    if dir == 3
+        phys = phys / 1000;          % kNmm -> kNm
+    end
+
+    val = phys / meanKL;
+
     LArr = val * 0.25 * meanL;
 
 
     p1 = [Knoten(KnotenIdx).xPos; Knoten(KnotenIdx).yPos];
+    ptext = getTextPos(p1, dir, val, meanL);
 
     switch dir
         case 1
@@ -339,13 +368,39 @@ for i = 1:nKL
             p0 = p0 + p1;
 
             drawArrow2(p0, p1, 'r', meanL);
+
+            text(ptext(1), ptext(2), num2str(KnotenLast(i).val));
         case 3
-            val = val / 1000;
-            radius = abs(val) * meanL * 0.1;
+            radius = abs(val) * meanL * 0.125;
 
             drawCircularArrow(radius, p1, sign(val), 'r');
+
+            text(ptext(1), ptext(2), num2str(KnotenLast(i).val));
     end
 end
 
 
 end
+
+function ptext = getTextPos(basePoint, dir, val, meanL)
+
+    ptext = basePoint;
+
+    switch dir
+        case 1  % horizontal
+            if sign(val) >= 0
+                ptext = ptext + [-0.2; -0.04] * meanL;
+            else
+                ptext = ptext + [ 0.2; -0.04] * meanL;
+            end
+        case 2  % vertical
+            if sign(val) >= 0
+                ptext = ptext + [ 0.02; -0.2] * meanL;
+            else
+                ptext = ptext + [-0.04;  0.2] * meanL;
+            end
+        case 3  % moment
+            ptext = ptext + [0.15; 0.15] * meanL;
+    end
+end
+

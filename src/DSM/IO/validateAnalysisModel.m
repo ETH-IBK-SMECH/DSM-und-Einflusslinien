@@ -308,18 +308,31 @@ end
 if isfield(A, 'Kondensation') && ~isempty(A.Kondensation)
     K = A.Kondensation;
 
+    % Knoten
     if ~isfield(K, 'Knoten') || ~isvector(K.Knoten)
         issues{end+1} = 'ERROR: Kondensation.Knoten muss ein Vektor mit Knoten-IDs sein.';
     else
-        bad = K.Knoten(~ismember(K.Knoten, 1:numel(A.Knoten)));
+        nodesK = K.Knoten(:);
+        bad = nodesK(~ismember(nodesK, 1:numel(A.Knoten)));
         if ~isempty(bad)
-            issues{end+1} = sprintf('ERROR: Kondensation.Knoten enthält ungültige Knoten-IDs: [%s].', num2str(bad));
+            issues{end+1} = sprintf( ...
+                'ERROR: Kondensation.Knoten enthält ungültige Knoten-IDs: [%s].', ...
+                num2str(bad.'));
         end
     end
 
-    if ~isfield(K, 'KomponentenMaske') || ~islogical(K.KomponentenMaske) ...
-            || numel(K.KomponentenMaske) ~= ndof
-        issues{end+1} = sprintf('ERROR: Kondensation.KomponentenMaske muss logischer Vektor der Länge %d sein.', ndof);
+    % KomponentenMaske
+    if ~isfield(K, 'KomponentenMaske') || ~islogical(K.KomponentenMaske)
+        issues{end+1} = 'ERROR: Kondensation.KomponentenMaske muss logisch sein.';
+    else
+        M = K.KomponentenMaske;
+        if size(M,2) ~= ndof
+            issues{end+1} = sprintf( ...
+                'ERROR: Kondensation.KomponentenMaske muss %d Spalten (DOF pro Knoten) haben.', ndof);
+        end
+        if size(M,1) ~= numel(K.Knoten)
+            issues{end+1} = 'ERROR: Kondensation.KomponentenMaske muss gleich viele Zeilen wie Knoten-Einträge haben.';
+        end
     end
 end
 
