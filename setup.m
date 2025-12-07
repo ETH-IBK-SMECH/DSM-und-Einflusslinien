@@ -2,13 +2,13 @@ function setup()
 %Ermöglicht es Funktionen zu rufen, von allen Ordner aus
 restoredefaultpath;
 rehash;
-projectRoot = fileparts(fileparts(mfilename('fullpath'))); % -> project-root/scripts
+projectRoot = fileparts(mfilename('fullpath')); % -> project-root/scripts
 addpath(projectRoot);
 addpath(genpath(fullfile(projectRoot, 'src'))); % all code
 addpath(genpath(fullfile(projectRoot, 'Beispiele')));
 
 % === Add MBeautifier ===
-beautifierPath = fullfile(projectRoot, 'scripts', 'MBeautifier-1.4.0');
+beautifierPath = fullfile(projectRoot, 'MBeautifier-1.4.0');
 if isfolder(beautifierPath)
     addpath(genpath(beautifierPath));
     disp('[setup] MBeautifier added to path.');
