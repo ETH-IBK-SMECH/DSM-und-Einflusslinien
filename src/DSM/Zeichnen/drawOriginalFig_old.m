@@ -237,10 +237,10 @@ end
 %StabLasten_vert
 for i = 1:numel(StabLast_vert)
     StabIdx = StabLast_vert(i).Stab;
-    dir  = StabLast_vert(i).Richtung;
-    phys = StabLast_vert(i).Wert;  
+    dir = StabLast_vert(i).Richtung;
+    phys = StabLast_vert(i).Wert;
 
-    val = phys / meanSLv;           
+    val = phys / meanSLv;
     sDist = StabLast_vert(i).StartPosition;
     eDist = StabLast_vert(i).EndPosition;
     LArr = val * 0.125 * meanL;
@@ -275,13 +275,13 @@ for i = 1:numel(StabLast_vert)
         eKL = SKKord + R' * eKordLine;
 
         line([sKL(1), eKL(1)], [sKL(2), eKL(2)], 'color', 'b', 'LineWidth', 1.5);
-        center   = (sKL + eKL) / 2;
-        ptext    = getTextPos(center, dir, val, meanL);
+        center = (sKL + eKL) / 2;
+        ptext = getTextPos(center, dir, val, meanL);
         text(ptext(1), ptext(2), num2str(StabLast_vert(i).Wert));
     elseif dir == 1
-        centerLoc = [ (sDist + eDist)/2 * L; 0 ];      
-        center    = SKKord + R' * centerLoc;          
-        ptext     = getTextPos(center, dir, val, meanL);
+        centerLoc = [(sDist + eDist) / 2 * L; 0];
+        center = SKKord + R' * centerLoc;
+        ptext = getTextPos(center, dir, val, meanL);
         text(ptext(1), ptext(2), num2str(StabLast_vert(i).Wert));
     end
 
@@ -292,11 +292,11 @@ end
 %StabLasten_konz
 for i = 1:numel(StabLast_konz)
     StabIdx = StabLast_konz(i).Stab;
-    dir  = StabLast_konz(i).Richtung;
+    dir = StabLast_konz(i).Richtung;
     phys = StabLast_konz(i).Wert;
 
     if dir == 3
-        phys = phys / 1000;          % kNmm -> kNm 
+        phys = phys / 1000; % kNmm -> kNm
     end
 
     val = phys / meanSLk;
@@ -325,14 +325,14 @@ for i = 1:numel(StabLast_konz)
 
             drawArrow2(p0, p1, 'r', meanL);
             basePoint = (p0 + p1) / 2;
-            ptext     = getTextPos(basePoint, dir, val, meanL);
+            ptext = getTextPos(basePoint, dir, val, meanL);
             text(ptext(1), ptext(2), num2str(StabLast_konz(i).Wert));
-        case 3     
+        case 3
             radius = abs(val) * meanL * 0.125;
 
             drawCircularArrow(radius, p1, sign(val), 'r');
             basePoint = p1;
-            ptext     = getTextPos(basePoint, 3, val, meanL);
+            ptext = getTextPos(basePoint, 3, val, meanL);
             text(ptext(1), ptext(2), num2str(StabLast_konz(i).Wert));
     end
 end
@@ -341,11 +341,11 @@ end
 %KnotenLast
 for i = 1:nKL
     KnotenIdx = KnotenLast(i).node;
-    dir  = KnotenLast(i).dir;
+    dir = KnotenLast(i).dir;
     phys = KnotenLast(i).val;
 
     if dir == 3
-        phys = phys / 1000;          % kNmm -> kNm
+        phys = phys / 1000; % kNmm -> kNm
     end
 
     val = phys / meanKL;
@@ -384,23 +384,22 @@ end
 
 function ptext = getTextPos(basePoint, dir, val, meanL)
 
-    ptext = basePoint;
+ptext = basePoint;
 
-    switch dir
-        case 1  % horizontal
-            if sign(val) >= 0
-                ptext = ptext + [-0.2; -0.04] * meanL;
-            else
-                ptext = ptext + [ 0.2; -0.04] * meanL;
-            end
-        case 2  % vertical
-            if sign(val) >= 0
-                ptext = ptext + [ 0.02; -0.2] * meanL;
-            else
-                ptext = ptext + [-0.04;  0.2] * meanL;
-            end
-        case 3  % moment
-            ptext = ptext + [0.15; 0.15] * meanL;
-    end
+switch dir
+    case 1 % horizontal
+        if sign(val) >= 0
+            ptext = ptext + [-0.2; -0.04] * meanL;
+        else
+            ptext = ptext + [0.2; -0.04] * meanL;
+        end
+    case 2 % vertical
+        if sign(val) >= 0
+            ptext = ptext + [0.02; -0.2] * meanL;
+        else
+            ptext = ptext + [-0.04; 0.2] * meanL;
+        end
+    case 3 % moment
+        ptext = ptext + [0.15; 0.15] * meanL;
 end
-
+end
