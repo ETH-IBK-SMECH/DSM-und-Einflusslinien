@@ -5,7 +5,7 @@ function kond = randbedingungenKondensierenEinflusslinie( ...
 n = size(K_sys, 1);
 cutNode1 = Einflusslinie.cutNodes(1);
 cutNode2 = Einflusslinie.cutNodes(2);
-keep = logical(Einflusslinie.keepMask(:)); % 1×nkd
+keep = true(nkd, 1);
 comp = Einflusslinie.TypEL;
 
 % --- Lokale → globale DOF-IDs der beiden Schnittknoten ---

@@ -1,40 +1,51 @@
-function keepMask_ff = dofsZuKondensieren(modell, DOF, knotenZuKondensieren, komponentenMaske, nZiel)
+function keepMask_ff = dofsZuKondensieren(modell, DOF, kond, knotenZuKondensieren, komponentenMaske)
 % Erzeugt eine logische BEHALTE-Maske über den FREIEN DOF (Grösse = nZiel = size(K_ff,1)).
 % true  -> behalten (extern)
 % false -> kondensieren (intern)
-%
-% Idee:
-%   1) physikalische freie DOF (freeList) aus DOF(:)>0 bestimmen
-%   2) für die gewünschten Knoten/Komponenten die zugehörigen freien Indizes
-%      in freeList finden und auf "false" setzen
-%   3) Maske auf Länge nZiel bringen (neue/zusätzliche Zeilen, z.B. LM, werden behalten)
 
 nkd = modell.Info.nKnotenDOF;
-freeList = find(DOF(:) > 0); % globale IDs der freien phys. DOF
-keepMask_ff = true(numel(freeList), 1); % zunächst alles behalten
 
-if ~isempty(knotenZuKondensieren)
-    km = logical(komponentenMaske(:).'); % 1×nkd
-    for k = knotenZuKondensieren(:).'
-        loc = (k - 1) * nkd + (1:nkd); % lokale DOF des Knotens
-        for d = find(km) % betroffene Komponenten
-            g = DOF(loc(d)); % globale DOF-ID (0 falls fest)
-            if g > 0
-                idx = find(freeList == g, 1); % Position im freien System
-                if ~isempty(idx)
-                    keepMask_ff(idx) = false; % intern → kondensieren
-                end
+% Anzahl freier physikalischer DOF (= max DOF-Nummer)
+freeDOF_global = kond.DOF(:);      % == find(kond.f)
+nFree = numel(freeDOF_global);
+keepMask_ff = true(nFree, 1);            % initial: alle behalten
+
+% nichts angegeben -> nichts zu tun
+if isempty(knotenZuKondensieren) || isempty(komponentenMaske)
+    return;
+end
+
+% Falls alles false ist: ebenfalls nichts tun
+if all(~komponentenMaske(:))
+    return;
+end
+
+% Für jede Tabellenzeile: Knotennummer + zugehörige DOF-Maske
+for row = 1:numel(knotenZuKondensieren)
+    k  = knotenZuKondensieren(row);
+    km = logical(komponentenMaske(row, :));   % 1×nkd für diesen Knoten
+
+    if k < 1 || k > modell.Info.nKnoten
+        % ungültiger Knoten -> einfach überspringen (Validator sollte das melden)
+        continue;
+    end
+
+    if ~any(km)
+        % für diesen Knoten nichts zu kondensieren
+        continue;
+    end
+    % lokale "lineare" Indizes der DOF dieses Knotens
+    loc = (k - 1) * nkd + (1:nkd);
+
+    for d = find(km)    % welche Komponenten (x,y,phi,...) sollen kondensiert werden?
+        g = DOF(loc(d));    % globale DOF-Nummer (1..nDOF) oder 0 (falls fest)
+        if g > 0
+            % Position dieses globalen DOF in der freien DOF-Liste finden
+            j = find(freeDOF_global == g, 1);
+            if ~isempty(j)
+                keepMask_ff(j) = false;  % -> interner DOF, wird kondensiert
             end
         end
     end
-end
-
-% Maske an die Zielgrösse des aktuellen freien Systems anpassen:
-% - zusätzliche Zeilen (z.B. LM) als "behalten" markieren
-% - zu lange Masken abschneiden
-if nZiel > numel(keepMask_ff)
-    keepMask_ff(end+1:nZiel, 1) = true;
-elseif nZiel < numel(keepMask_ff)
-    keepMask_ff = keepMask_ff(1:nZiel);
 end
 end
