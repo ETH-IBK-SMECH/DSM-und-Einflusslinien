@@ -1,10 +1,10 @@
-function arrow = drawArrow2(p0, p1, color, l)
+function arrow = drawArrow2(ax, p0, p1, color, l)
 %p0 are coordinates of tail as [x;y]
 %p1 are coordinates of tip as [x;y]
 %color as 'g'
 
 %spike gad do drii schriibe zum patche
-patch([p0(1), p1(1)], [p0(2), p1(2)], color, 'EdgeColor', color, 'LineWidth', 1.5);
+patch(ax, [p0(1), p1(1)], [p0(2), p1(2)], color, 'EdgeColor', color, 'LineWidth', 1.5);
 
 %now spike in dependence of tip position and angle
 
@@ -26,8 +26,8 @@ R = [c, s; -s, c];
 
 tipKoord = R' * [xKoord; yKoord] + p1;
 
-patch(tipKoord(1, :), tipKoord(2, :), color, 'EdgeColor', color);
-axis equal;
+patch(ax, tipKoord(1, :), tipKoord(2, :), color, 'EdgeColor', color);
+axis(ax, 'equal');
 
 
 end

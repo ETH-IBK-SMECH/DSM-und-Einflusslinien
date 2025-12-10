@@ -1,4 +1,4 @@
-function drawOriginalSprings(Knoten, Feder, meanL)
+function drawOriginalSprings(ax, Knoten, Feder, meanL)
 % Zeichnet Federn am entsprechendem Knoten
 
 for i = 1:numel(Feder)
@@ -6,6 +6,6 @@ for i = 1:numel(Feder)
     node = Feder(i).node;
     centre = [Knoten(node).xPos; Knoten(node).yPos];
 
-    drawFeder(type, centre, 4*meanL);
+    drawFeder(ax, type, centre, 4*meanL);
 end
 end

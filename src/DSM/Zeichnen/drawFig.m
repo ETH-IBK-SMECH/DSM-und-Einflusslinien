@@ -1,10 +1,12 @@
 function out = drawFig(model)
 
-t = tiledlayout(1, 1);
+fig = figure;
+
+t = tiledlayout(fig, 1, 1);
 title(t, 'Struktur');
 
-nexttile;
-drawOriginalFig(model);
+ax = nexttile(t);
 
+drawOriginalFig(ax, model);
 
 end

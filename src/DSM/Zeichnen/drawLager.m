@@ -1,4 +1,4 @@
-function lager = drawLager(type, centre, R, L)
+function lager = drawLager(ax, type, centre, R, L)
 %type represents type of support
 %kord are the coordinates of node as [x;y]
 %R will be needed to rotate
@@ -15,8 +15,8 @@ switch type
 
         KORDS = centre + R' * [x; y];
 
-        patch(KORDS(1, :), KORDS(2, :), 'k', 'LineWidth', 1);
-        axis equal;
+        patch(ax, KORDS(1, :), KORDS(2, :), 'k', 'LineWidth', 1);
+        axis(ax, 'equal');
 
     case 2 %gelenkiges auflager
         x = [0, 0.1, -0.1, 0, NaN];
@@ -27,8 +27,8 @@ switch type
 
         KORDS = centre + R' * [x; y];
 
-        patch(KORDS(1, :), KORDS(2, :), 'k', 'LineWidth', 1);
-        axis equal;
+        patch(ax, KORDS(1, :), KORDS(2, :), 'k', 'LineWidth', 1);
+        axis(ax, 'equal');
 
     case 3
         x = [0, 0.1, -0.1, 0, NaN, -0.1, 0.1, NaN];
@@ -39,8 +39,8 @@ switch type
 
         KORDS = centre + R' * [x; y];
 
-        patch(KORDS(1, :), KORDS(2, :), 'k', 'LineWidth', 1);
-        axis equal;
+        patch(ax, KORDS(1, :), KORDS(2, :), 'k', 'LineWidth', 1);
+        axis(ax, 'equal');
 
     case 4
         x = [0, -0.13, -0.13, 0, NaN, -0.155, -0.155, NaN];
@@ -51,8 +51,8 @@ switch type
 
         KORDS = centre + R' * [x; y];
 
-        patch(KORDS(1, :), KORDS(2, :), 'k', 'LineWidth', 1);
-        axis equal;
+        patch(ax, KORDS(1, :), KORDS(2, :), 'k', 'LineWidth', 1);
+        axis(ax, 'equal');
 
     case 5
         x = [0, -0.1, 0.1, NaN, 0.1, -0.1, NaN];
@@ -63,8 +63,8 @@ switch type
 
         KORDS = centre + R' * [x; y];
 
-        patch(KORDS(1, :), KORDS(2, :), 'k', 'LineWidth', 1);
-        axis equal;
+        patch(ax, KORDS(1, :), KORDS(2, :), 'k', 'LineWidth', 1);
+        axis(ax, 'equal');
 
     case 6
         x = [0, 0, 0, NaN, -0.05, -0.05, NaN];
@@ -75,8 +75,8 @@ switch type
 
         KORDS = centre + R' * [x; y];
 
-        patch(KORDS(1, :), KORDS(2, :), 'k', 'LineWidth', 1);
-        axis equal;
+        patch(ax, KORDS(1, :), KORDS(2, :), 'k', 'LineWidth', 1);
+        axis(ax, 'equal');
 
 end
 

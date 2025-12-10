@@ -1,4 +1,4 @@
-function circArrow = drawCircularArrow(radius, centre, sign, color)
+function circArrow = drawCircularArrow(ax, radius, centre, sign, color)
 %radius as a number
 %centre as coordinates in format [x;y]
 %for sign just sign(torque)
@@ -38,8 +38,8 @@ switch sign
 end
 
 
-patch(xtip, ytip, color, 'EdgeColor', color);
-patch(x, y, color, 'EdgeColor', color, 'LineWidth', 1.5);
-axis equal
+patch(ax, xtip, ytip, color, 'EdgeColor', color);
+patch(ax, x, y, color, 'EdgeColor', color, 'LineWidth', 1.5);
+axis(ax, 'equal');
 
 end

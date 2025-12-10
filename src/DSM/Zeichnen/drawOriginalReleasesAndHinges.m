@@ -1,4 +1,4 @@
-function drawOriginalReleasesAndHinges(Knoten, Staebe, Stab, meanL, nKnoten, nStaebe)
+function drawOriginalReleasesAndHinges(ax, Knoten, Staebe, Stab, meanL, nKnoten, nStaebe)
 % Zeichnet:
 % - dicke Linien für EIinf-Stäbe
 % - Momentengelenke (inkl. "globales" M-Gelenk am Knoten oder leicht versetzt)
@@ -14,7 +14,7 @@ for i = 1:nStaebe
     if isfield(Stab(i), 'EIinf') && Stab(i).EIinf
         x = [Knoten(startK).xPos, Knoten(endK).xPos, NaN];
         y = [Knoten(startK).yPos, Knoten(endK).yPos, NaN];
-        patch(x, y, 'k', 'LineWidth', 2.1, 'LineJoin', 'round');
+        patch(ax, x, y, 'k', 'LineWidth', 2.1, 'LineJoin', 'round');
     end
 
     % Releases direkt aus Analysemodell übernehmen
@@ -35,25 +35,25 @@ for i = 1:nStaebe
     if (Staebe(i).sRelease == 3 & momentengelenk(Staebe(i).StartKnoten))
         centre = [Knoten(Staebe(i).StartKnoten).xPos; ...
             Knoten(Staebe(i).StartKnoten).yPos];
-        drawGelenk(3, centre, meanL);
+        drawGelenk(ax, 3, centre, meanL);
     elseif (Staebe(i).sRelease == 3)
         centre = [0.025 * meanL; 0];
         centre = Staebe(i).R(1:2, 1:2)' * centre;
         centre = [Knoten(Staebe(i).StartKnoten).xPos; ...
             Knoten(Staebe(i).StartKnoten).yPos] + centre;
-        drawGelenk(3, centre, meanL);
+        drawGelenk(ax, 3, centre, meanL);
     end
 
     if (Staebe(i).eRelease == 3 & momentengelenk(Staebe(i).EndKnoten))
         centre = [Knoten(Staebe(i).EndKnoten).xPos; ...
             Knoten(Staebe(i).EndKnoten).yPos];
-        drawGelenk(3, centre, meanL);
+        drawGelenk(ax, 3, centre, meanL);
     elseif (Staebe(i).eRelease == 3)
         centre = [-0.025 * meanL; 0];
         centre = Staebe(i).R(1:2, 1:2)' * centre;
         centre = [Knoten(Staebe(i).EndKnoten).xPos; ...
             Knoten(Staebe(i).EndKnoten).yPos] + centre;
-        drawGelenk(3, centre, meanL);
+        drawGelenk(ax, 3, centre, meanL);
     end
 end
 end

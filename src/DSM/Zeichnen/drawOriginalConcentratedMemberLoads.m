@@ -1,4 +1,4 @@
-function drawOriginalConcentratedMemberLoads(Knoten, Staebe, StabLast_konz, meanL, meanSLk)
+function drawOriginalConcentratedMemberLoads(ax, Knoten, Staebe, StabLast_konz, meanL, meanSLk)
 % Zeichnet konzentrierte Stablasten (rot, inkl. Momente)
 
 for i = 1:numel(StabLast_konz)
@@ -34,18 +34,18 @@ for i = 1:numel(StabLast_konz)
         case {1, 2}
             p0 = SKKord + R' * p0;
 
-            drawArrow2(p0, p1, 'r', meanL);
+            drawArrow2(ax, p0, p1, 'r', meanL);
             basePoint = (p0 + p1) / 2;
             ptext = getTextPos(basePoint, dir, val, meanL);
-            text(ptext(1), ptext(2), num2str(StabLast_konz(i).Wert));
+            text(ax, ptext(1), ptext(2), num2str(StabLast_konz(i).Wert));
 
         case 3
             radius = abs(val) * meanL * 0.125;
-            drawCircularArrow(radius, p1, sign(val), 'r');
+            drawCircularArrow(ax, radius, p1, sign(val), 'r');
 
             basePoint = p1;
             ptext = getTextPos(basePoint, 3, val, meanL);
-            text(ptext(1), ptext(2), num2str(StabLast_konz(i).Wert));
+            text(ax, ptext(1), ptext(2), num2str(StabLast_konz(i).Wert));
     end
 end
 end

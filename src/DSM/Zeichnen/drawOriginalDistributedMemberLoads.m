@@ -1,4 +1,4 @@
-function drawOriginalDistributedMemberLoads(Knoten, Staebe, StabLast_vert, meanL, meanSLv)
+function drawOriginalDistributedMemberLoads(ax, Knoten, Staebe, StabLast_vert, meanL, meanSLv)
 % Zeichnet verteilte Stablasten (blau)
 
 for i = 1:numel(StabLast_vert)
@@ -28,7 +28,7 @@ for i = 1:numel(StabLast_vert)
         p1 = SKKord + R' * p1;
         p0 = SKKord + R' * p0;
 
-        drawArrow2(p0, p1, 'b', meanL);
+        drawArrow2(ax, p0, p1, 'b', meanL);
     end
 
     if dir == 2
@@ -38,16 +38,16 @@ for i = 1:numel(StabLast_vert)
         sKL = SKKord + R' * sKordLine;
         eKL = SKKord + R' * eKordLine;
 
-        line([sKL(1), eKL(1)], [sKL(2), eKL(2)], 'color', 'b', 'LineWidth', 1.5);
+        line(ax, [sKL(1), eKL(1)], [sKL(2), eKL(2)], 'color', 'b', 'LineWidth', 1.5);
         center = (sKL + eKL) / 2;
         ptext = getTextPos(center, dir, val, meanL);
-        text(ptext(1), ptext(2), num2str(StabLast_vert(i).Wert));
+        text(ax, ptext(1), ptext(2), num2str(StabLast_vert(i).Wert));
 
     elseif dir == 1
         centerLoc = [(sDist + eDist) / 2 * L; 0];
         center = SKKord + R' * centerLoc;
         ptext = getTextPos(center, dir, val, meanL);
-        text(ptext(1), ptext(2), num2str(StabLast_vert(i).Wert));
+        text(ax, ptext(1), ptext(2), num2str(StabLast_vert(i).Wert));
     end
 end
 end

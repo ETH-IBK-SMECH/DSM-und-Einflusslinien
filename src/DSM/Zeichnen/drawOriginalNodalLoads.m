@@ -1,4 +1,4 @@
-function drawOriginalNodalLoads(Knoten, KnotenLast, meanL, meanKL, nKL)
+function drawOriginalNodalLoads(ax, Knoten, KnotenLast, meanL, meanKL, nKL)
 % Zeichnet Knotenlasten (rot, Kräfte und Momente)
 
 for i = 1:nKL
@@ -26,13 +26,13 @@ for i = 1:nKL
     switch dir
         case {1, 2}
             p0 = p0 + p1;
-            drawArrow2(p0, p1, 'r', meanL);
-            text(ptext(1), ptext(2), num2str(KnotenLast(i).val));
+            drawArrow2(ax, p0, p1, 'r', meanL);
+            text(ax, ptext(1), ptext(2), num2str(KnotenLast(i).val));
 
         case 3
             radius = abs(val) * meanL * 0.125;
-            drawCircularArrow(radius, p1, sign(val), 'r');
-            text(ptext(1), ptext(2), num2str(KnotenLast(i).val));
+            drawCircularArrow(ax,radius, p1, sign(val), 'r');
+            text(ax, ptext(1), ptext(2), num2str(KnotenLast(i).val));
     end
 end
 end

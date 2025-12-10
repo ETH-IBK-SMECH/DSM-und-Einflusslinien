@@ -1,4 +1,4 @@
-function [out] = drawOriginalFig(Model)
+function [out] = drawOriginalFig(ax, Model)
 
 % Darstellung basierend auf Model.Analyse mit Lager-Typen aus Model.Input
 % Knoten
@@ -117,26 +117,30 @@ end
 
 % ==== Ab hier nur noch Zeichnen: aufteilen in drawOriginalXY-Funktionen ====
 
+hold(ax, 'on');
+
 % 1) Stäbe (mit L, c, s, R) zeichnen
-Staebe = drawOriginalBeams(Knoten, Staebe);
+Staebe = drawOriginalBeams(ax, Knoten, Staebe);
 
 % 2) Lager
-drawOriginalSupports(Knoten, Staebe, Lager, meanL, nStaebe);
+drawOriginalSupports(ax, Knoten, Staebe, Lager, meanL, nStaebe);
 
 % 3) Federn
-drawOriginalSprings(Knoten, Feder, meanL);
+drawOriginalSprings(ax, Knoten, Feder, meanL);
 
 % 4) Querschnitte (EIinf) + Gelenke (Releases & Momentengelenke)
-drawOriginalReleasesAndHinges(Knoten, Staebe, Stab, meanL, nKnoten, nStaebe);
+drawOriginalReleasesAndHinges(ax, Knoten, Staebe, Stab, meanL, nKnoten, nStaebe);
 
 % 5) Verteilte Stablasten
-drawOriginalDistributedMemberLoads(Knoten, Staebe, StabLast_vert, meanL, meanSLv);
+drawOriginalDistributedMemberLoads(ax, Knoten, Staebe, StabLast_vert, meanL, meanSLv);
 
 % 6) Konzentrierte Stablasten
-drawOriginalConcentratedMemberLoads(Knoten, Staebe, StabLast_konz, meanL, meanSLk);
+drawOriginalConcentratedMemberLoads(ax, Knoten, Staebe, StabLast_konz, meanL, meanSLk);
 
 % 7) Knotenlasten
-drawOriginalNodalLoads(Knoten, KnotenLast, meanL, meanKL, nKL);
+drawOriginalNodalLoads(ax, Knoten, KnotenLast, meanL, meanKL, nKL);
+
+hold(ax, 'off');
 
 out = [];   % optional, just to have a defined output
 

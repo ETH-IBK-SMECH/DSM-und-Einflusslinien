@@ -1,4 +1,4 @@
-function drawOriginalSupports(Knoten, Staebe, Lager, meanL, nStaebe)
+function drawOriginalSupports(ax, Knoten, Staebe, Lager, meanL, nStaebe)
 % Zeichnet Lager gemäss Lager-Typ
 
 for i = 1:size(Lager, 1)
@@ -16,11 +16,11 @@ for i = 1:size(Lager, 1)
                 stabnodeidx = stabnodeidx - nStaebe;
                 R = [-1, 0; 0, -1] * Staebe(stabnodeidx).R(1:2, 1:2);
             end
-            drawLager(type, centre, R, 0.6*meanL);
+            drawLager(ax, type, centre, R, 0.6*meanL);
 
         case {2, 3, 4}
             R = eye(2);
-            drawLager(type, centre, R, 0.5*meanL);
+            drawLager(ax, type, centre, R, 0.5*meanL);
 
         case {5, 6}
             stabnodes = [Staebe.StartKnoten; Staebe.EndKnoten]';
@@ -30,7 +30,7 @@ for i = 1:size(Lager, 1)
             else
                 R = [-1, 0; 0, -1];
             end
-            drawLager(type, centre, R, 0.6*meanL);
+            drawLager(ax, type, centre, R, 0.6*meanL);
     end
 end
 end

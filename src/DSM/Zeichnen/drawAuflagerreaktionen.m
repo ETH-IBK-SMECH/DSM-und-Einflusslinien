@@ -1,6 +1,6 @@
 function [out] = drawAuflagerreaktionen(Model)
 
-
+fig = figure;
 
 Knoten = struct( ...
     'xPos', num2cell([Model.Analyse.Knoten.x]), ...
@@ -10,10 +10,12 @@ SPC = Model.Analyse.SPC;
 meanL = mean([Model.Analyse.Stab.L]);
 Feder = Model.Analyse.Feder;
 
-t = tiledlayout(1, 1);
+t = tiledlayout(fig, 1, 1);
 title(t, "Auflagerreaktionen")
 
-drawOriginalFig(Model);
+ax = nexttile(t);
+
+drawOriginalFig(ax, Model);
 
 
 formeanSPC = [];
@@ -65,16 +67,16 @@ for i = 1:size(SPC, 2)
         case {1, 2}
             p0 = p0 + p1;
 
-            drawArrow2(p0, p1, 'm', meanL);
-            text(ptext(1), ptext(2), num2str(SPC(i).Reaktion));
+            drawArrow2(ax, p0, p1, 'm', meanL);
+            text(ax, ptext(1), ptext(2), num2str(SPC(i).Reaktion));
         case 3
             if val >= 5
                 val = val / 1000;
             end
             radius = abs(val) * meanL * 0.1;
 
-            drawCircularArrow(radius, p1, sign(val), 'm');
-            text(ptext(1), ptext(2), num2str(SPC(i).Reaktion));
+            drawCircularArrow(ax, radius, p1, sign(val), 'm');
+            text(ax, ptext(1), ptext(2), num2str(SPC(i).Reaktion));
     end
 
 end
@@ -119,16 +121,16 @@ if isfield(Feder, 'Reaktion')
             case {1, 2}
                 p0 = p0 + p1;
 
-                drawArrow2(p0, p1, 'm', meanL);
-                text(ptext(1), ptext(2), num2str(SPC(i).Reaktion));
+                drawArrow2(ax, p0, p1, 'm', meanL);
+                text(ax, ptext(1), ptext(2), num2str(SPC(i).Reaktion));
             case 3
                 if val >= 5
                     val = val / 1000;
                 end
                 radius = abs(val) * meanL * 0.1;
 
-                drawCircularArrow(radius, p1, sign(val), 'm');
-                text(ptext(1), ptext(2), num2str(SPC(i).Reaktion));
+                drawCircularArrow(ax, radius, p1, sign(val), 'm');
+                text(ax, ptext(1), ptext(2), num2str(SPC(i).Reaktion));
         end
 
     end
