@@ -15,7 +15,6 @@ switch type
         KORDS = centre + [x; y];
 
         patch(ax, KORDS(1, :), KORDS(2, :), 'k', 'LineWidth', 1);
-        axis(ax, 'equal');
 
     case 2
         x = [0, 0, -0.02, 0.02, -0.02, 0.02, -0.02, 0.02, 0, 0, -0.03, 0.03, NaN];
@@ -27,7 +26,6 @@ switch type
         KORDS = centre + [x; y];
 
         patch(ax, KORDS(1, :), KORDS(2, :), 'k', 'LineWidth', 1);
-        axis(ax, 'equal');
 
     case 3
         angles = linspace(pi, -2*pi-pi/4, 100);
@@ -45,7 +43,6 @@ switch type
         KORDS = centre + [x; y];
 
         patch(ax, KORDS(1, :), KORDS(2, :), 'k', 'LineWidth', 1);
-        axis(ax, 'equal');
 
 end
 

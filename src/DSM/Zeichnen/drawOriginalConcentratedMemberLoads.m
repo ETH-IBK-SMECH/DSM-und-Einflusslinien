@@ -1,4 +1,4 @@
-function drawOriginalConcentratedMemberLoads(ax, Knoten, Staebe, StabLast_konz, meanL, meanSLk)
+function drawOriginalConcentratedMemberLoads(ax, Knoten, Staebe, StabLast_konz, meanL, L_arrow, R_moment)
 % Zeichnet konzentrierte Stablasten (rot, inkl. Momente)
 
 for i = 1:numel(StabLast_konz)
@@ -6,13 +6,13 @@ for i = 1:numel(StabLast_konz)
     dir = StabLast_konz(i).Richtung;
     phys = StabLast_konz(i).Wert;
 
-    if dir == 3
-        phys = phys / 1000; % kNmm -> kNm
-    end
-
-    val = phys / meanSLk;
     sDist = StabLast_konz(i).StartPosition;
-    LArr = val * 0.25 * meanL;
+
+    if dir ~= 3
+        s = sign(phys);
+        if s == 0, continue; end
+        LArr = s * L_arrow;
+    end
 
     R = Staebe(StabIdx).R(1:2, 1:2);
     SKKord = [Knoten(Staebe(StabIdx).StartKnoten).xPos; ...
@@ -35,17 +35,21 @@ for i = 1:numel(StabLast_konz)
             p0 = SKKord + R' * p0;
 
             drawArrow2(ax, p0, p1, 'r', meanL);
-            basePoint = (p0 + p1) / 2;
-            ptext = getTextPos(basePoint, dir, val, meanL);
-            text(ax, ptext(1), ptext(2), num2str(StabLast_konz(i).Wert));
+            ptext = getTextPosFromArrow(ax, p0, s, 5);
+            text(ax, ptext(1), ptext(2), num2str(StabLast_konz(i).Wert), ...
+                'Clipping','on', 'HorizontalAlignment','center', 'VerticalAlignment','middle');
+
 
         case 3
-            radius = abs(val) * meanL * 0.125;
-            drawCircularArrow(ax, radius, p1, sign(val), 'r');
+             s = sign(phys);
+             if s == 0, continue; end
 
-            basePoint = p1;
-            ptext = getTextPos(basePoint, 3, val, meanL);
-            text(ax, ptext(1), ptext(2), num2str(StabLast_konz(i).Wert));
+             drawCircularArrow(ax, R_moment, p1, s, 'r');
+
+             ptext = getTextPosFromMoment(ax, p1, R_moment, sign(phys), 5);
+             text(ax, ptext(1), ptext(2), num2str(StabLast_konz(i).Wert), ...
+                 'Clipping','on', 'HorizontalAlignment','left', 'VerticalAlignment','bottom');
+
     end
 end
 end

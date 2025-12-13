@@ -40,6 +40,5 @@ end
 
 patch(ax, xtip, ytip, color, 'EdgeColor', color);
 patch(ax, x, y, color, 'EdgeColor', color, 'LineWidth', 1.5);
-axis(ax, 'equal');
 
 end

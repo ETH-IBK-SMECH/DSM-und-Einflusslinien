@@ -40,7 +40,17 @@ Feder    = Model.Analyse.Feder;      % struct mit .node, .dir, .val
 KnotenLast = Model.Analyse.KnotenLast; % struct mit .node, .dir, .val
 StabLast   = Model.Analyse.StabLast;   % struct mit .stab, .dir, .val, .sDist, .eDist, .typ
 
+nKL = numel(KnotenLast);
 meanL = mean([Stab.L]);
+xAll = [Knoten.xPos];
+yAll = [Knoten.yPos];
+Lsys = hypot(max(xAll)-min(xAll), max(yAll)-min(yAll));
+if ~isfinite(Lsys) || Lsys <= 0
+    Lsys = meanL;
+end
+
+L_arrow  = 0.15 * Lsys;   % base arrow length in plot units
+R_moment = 0.08 * Lsys;   % base moment arrow radius in plot units
 
 % StabLast_konz und StabLast_vert aus Analysemodell bauen
 StabLast_konz = struct('Stab', {}, 'Richtung', {}, 'Wert', {}, ...
@@ -68,53 +78,6 @@ for i = 1:numel(StabLast)
     end
 end
 
-% mean konzentrierte Stablasten -> beachte, dass Moment in kNmm erfasst wird
-if ~isempty(StabLast_konz) && isfield(StabLast_konz, 'Wert')
-    formeanSLk = [];
-    for i = 1:numel(StabLast_konz)
-        if StabLast_konz(i).Richtung == 3
-            formeanSLk(end+1) = StabLast_konz(i).Wert / 1000;
-        else
-            formeanSLk(end+1) = StabLast_konz(i).Wert;
-        end
-    end
-    meanSLk = abs(mean(abs(formeanSLk)));
-else
-    meanSLk = 1;
-end
-
-% mean verteilte Stablasten
-if ~isempty(StabLast_vert) && isfield(StabLast_vert, 'Wert')
-    formeanSLv = [];
-    for i = 1:numel(StabLast_vert)
-        if StabLast_vert(i).Richtung == 3
-            formeanSLv(end+1) = StabLast_vert(i).Wert / 1000;
-        else
-            formeanSLv(end+1) = StabLast_vert(i).Wert;
-        end
-    end
-    meanSLv = abs(mean(abs(formeanSLv)));
-else
-    meanSLv = 1;
-end
-
-% mean Knotenlasten
-if ~isempty(KnotenLast) && isfield(KnotenLast, 'val')
-    formeanKL = [];
-    nKL = numel(KnotenLast);
-    for i = 1:nKL
-        if KnotenLast(i).dir == 3
-            formeanKL(end+1) = KnotenLast(i).val / 1000;
-        else
-            formeanKL(end+1) = KnotenLast(i).val;
-        end
-    end
-    meanKL = abs(mean(abs(formeanKL)));
-else
-    meanKL = 1;
-    nKL = 0;
-end
-
 % ==== Ab hier nur noch Zeichnen: aufteilen in drawOriginalXY-Funktionen ====
 
 hold(ax, 'on');
@@ -132,13 +95,13 @@ drawOriginalSprings(ax, Knoten, Feder, meanL);
 drawOriginalReleasesAndHinges(ax, Knoten, Staebe, Stab, meanL, nKnoten, nStaebe);
 
 % 5) Verteilte Stablasten
-drawOriginalDistributedMemberLoads(ax, Knoten, Staebe, StabLast_vert, meanL, meanSLv);
+drawOriginalDistributedMemberLoads(ax, Knoten, Staebe, StabLast_vert, meanL, 0.75*L_arrow);
 
 % 6) Konzentrierte Stablasten
-drawOriginalConcentratedMemberLoads(ax, Knoten, Staebe, StabLast_konz, meanL, meanSLk);
+drawOriginalConcentratedMemberLoads(ax, Knoten, Staebe, StabLast_konz, meanL, L_arrow, R_moment);
 
 % 7) Knotenlasten
-drawOriginalNodalLoads(ax, Knoten, KnotenLast, meanL, meanKL, nKL);
+drawOriginalNodalLoads(ax, Knoten, KnotenLast, meanL, nKL, L_arrow, R_moment);
 
 hold(ax, 'off');
 

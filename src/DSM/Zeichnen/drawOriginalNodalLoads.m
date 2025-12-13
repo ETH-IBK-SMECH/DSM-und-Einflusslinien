@@ -1,4 +1,4 @@
-function drawOriginalNodalLoads(ax, Knoten, KnotenLast, meanL, meanKL, nKL)
+function drawOriginalNodalLoads(ax, Knoten, KnotenLast, meanL, nKL, L_arrow, R_moment)
 % Zeichnet Knotenlasten (rot, Kräfte und Momente)
 
 for i = 1:nKL
@@ -6,15 +6,14 @@ for i = 1:nKL
     dir = KnotenLast(i).dir;
     phys = KnotenLast(i).val;
 
-    if dir == 3
-        phys = phys / 1000; % kNmm -> kNm
+    if dir ~= 3
+        s = sign(phys);
+        if s == 0, continue; end
+        LArr = s * L_arrow;
     end
 
-    val = phys / meanKL;
-    LArr = val * 0.25 * meanL;
-
+    
     p1 = [Knoten(KnotenIdx).xPos; Knoten(KnotenIdx).yPos];
-    ptext = getTextPos(p1, dir, val, meanL);
 
     switch dir
         case 1
@@ -27,12 +26,19 @@ for i = 1:nKL
         case {1, 2}
             p0 = p0 + p1;
             drawArrow2(ax, p0, p1, 'r', meanL);
-            text(ax, ptext(1), ptext(2), num2str(KnotenLast(i).val));
+            ptext = getTextPosFromArrow(ax, p0, s, 5);
+            text(ax, ptext(1), ptext(2), num2str(KnotenLast(i).val), ...
+                'Clipping','on', 'HorizontalAlignment','center', 'VerticalAlignment','middle');
 
         case 3
-            radius = abs(val) * meanL * 0.125;
-            drawCircularArrow(ax,radius, p1, sign(val), 'r');
-            text(ax, ptext(1), ptext(2), num2str(KnotenLast(i).val));
+            s = sign(phys);
+            if s == 0, continue; end
+            drawCircularArrow(ax, R_moment, p1, s, 'r');
+            ptext = getTextPosFromMoment(ax, p1, R_moment, sign(phys), 5);
+            text(ax, ptext(1), ptext(2), num2str(KnotenLast(i).val), ...
+                'Clipping','on', 'HorizontalAlignment','left', 'VerticalAlignment','bottom');
+
     end
 end
 end
+

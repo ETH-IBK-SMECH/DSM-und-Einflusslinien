@@ -27,7 +27,5 @@ R = [c, s; -s, c];
 tipKoord = R' * [xKoord; yKoord] + p1;
 
 patch(ax, tipKoord(1, :), tipKoord(2, :), color, 'EdgeColor', color);
-axis(ax, 'equal');
-
 
 end
