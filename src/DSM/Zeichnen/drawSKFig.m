@@ -17,8 +17,8 @@ title(t, "Schnittkraftdiagramme");
 
 meanL = mean([model.Analyse.Stab.L]);
 
-skalierung = -abs(1/(4 * log(meanL))); %falls die Schnittkräfte nicht ersichtlich sind ändere die skalierung wie z.b. in der nächsten Zeile
-%skalierung = -1/(10*meanL); %ändere x*meanL wie du möchtest
+%skalierung = -abs(1/(4 * log(meanL))); %falls die Schnittkräfte nicht ersichtlich sind ändere die skalierung wie z.b. in der nächsten Zeile
+skalierung = -1/(10*meanL); %ändere x*meanL wie du möchtest
 
 nexttile;
 for i = 1:nStaebe

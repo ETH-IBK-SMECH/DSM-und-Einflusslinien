@@ -1,8 +1,9 @@
 function [out] = drawOriginalFig(ax, Model)
 
-% Darstellung basierend auf Model.Analyse mit Lager-Typen aus Model.Input
 % Knoten
 Ktab = Model.Input.Knoten;
+disp('Ktab: ');
+disp(Ktab);
 if istable(Ktab)
     Knoten = table2struct(Ktab);
 else

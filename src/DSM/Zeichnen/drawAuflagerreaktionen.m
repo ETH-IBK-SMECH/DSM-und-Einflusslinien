@@ -22,7 +22,7 @@ t = tiledlayout(fig, 1, 1);
 title(t, "Auflagerreaktionen")
 
 ax = nexttile(t);
-
+axis(ax, 'equal');
 drawOriginalFig(ax, Model);
 
 for i = 1:size(SPC, 2)
