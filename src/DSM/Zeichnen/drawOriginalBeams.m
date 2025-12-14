@@ -1,8 +1,7 @@
-function Staebe = drawOriginalBeams(ax, Knoten, Staebe)
+function Staebe = drawOriginalBeams(ax, Knoten, Staebe, parent)
 % Zeichnet die Stäbe (wie bisher) und füllt L, c, s, R in Staebe
 
 nStaebe = numel(Staebe);
-
 % Knoten- und Stab-Arrays wie bisher
 KnotenKORD = table2array(struct2table(Knoten));
 StaebeS = [Staebe.StartKnoten]';
@@ -10,7 +9,7 @@ StaebeE = [Staebe.EndKnoten]';
 StaebeKORD = [StaebeS, StaebeE];
 
 % genau wie vorher:
-patch(ax, 'Faces', StaebeKORD, 'Vertices', KnotenKORD, 'LineWidth', 1, 'DisplayName','Stäbe');
+patch(ax, 'Faces', StaebeKORD, 'Vertices', KnotenKORD, 'LineWidth', 1, 'DisplayName','Stäbe', 'Parent', parent);
 
 for i = 1:nStaebe
     sX = Knoten(Staebe(i).StartKnoten).xPos;

@@ -10,7 +10,7 @@ switch type
         y = radius * sin(angles) + centre(2);
 
 
-        patch(ax, x, y, 'w', 'LineWidth', 1.1);
+        patch(ax, x, y, 'w', 'LineWidth', 1.1, 'Parent', parent);
 end
 
 end

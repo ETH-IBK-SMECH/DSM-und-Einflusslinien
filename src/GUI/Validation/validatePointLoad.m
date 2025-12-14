@@ -52,14 +52,14 @@ if ismember('Wert', Tp.Properties.VariableNames)
     end
 end
 
-% ---- start position numeric & ≥ 0 ----
+% ---- start position numeric & between 0 - 1 ----
 if ismember('StartPosition', Tp.Properties.VariableNames)
-    badPos = isnan(Tp.StartPosition) | Tp.StartPosition < 0;
+    badPos = isnan(Tp.StartPosition) | Tp.StartPosition < 0 | Tp.StartPosition > 1;
     if any(badPos)
         rows = find(badPos);
         issues.ok = false;
         issues.messages{end+1} = sprintf( ...
-            'Tabelle "Stab-Einzellasten": Zeile(n) %s: Startposition muss ≥ 0 und numerisch sein.', ...
+            'Tabelle "Stab-Einzellasten": Zeile(n) %s: Startposition muss im Bereich [0, 1] liegen.', ...
             num2str(rows.'));
     end
 end

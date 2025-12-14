@@ -81,8 +81,10 @@ end
 
 hold(ax, 'on');
 
+hgStab = hggroup(ax);
+
 % 1) Stäbe (mit L, c, s, R) zeichnen
-Staebe = drawOriginalBeams(ax, Knoten, Staebe);
+Staebe = drawOriginalBeams(ax, Knoten, Staebe, hgStab);
 
 % 2) Lager
 drawOriginalSupports(ax, Knoten, Staebe, Lager, meanL, nStaebe);
@@ -91,7 +93,7 @@ drawOriginalSupports(ax, Knoten, Staebe, Lager, meanL, nStaebe);
 drawOriginalSprings(ax, Knoten, Feder, meanL);
 
 % 4) Querschnitte (EIinf) + Gelenke (Releases & Momentengelenke)
-drawOriginalReleasesAndHinges(ax, Knoten, Staebe, Stab, meanL, nKnoten, nStaebe);
+drawOriginalReleasesAndHinges(ax, Knoten, Staebe, Stab, meanL, nKnoten, nStaebe, hgStab);
 
 % 5) Verteilte Stablasten
 drawOriginalDistributedMemberLoads(ax, Knoten, Staebe, StabLast_vert, meanL, 0.75*L_arrow);
@@ -101,6 +103,12 @@ drawOriginalConcentratedMemberLoads(ax, Knoten, Staebe, StabLast_konz, meanL, L_
 
 % 7) Knotenlasten
 drawOriginalNodalLoads(ax, Knoten, KnotenLast, meanL, nKL, L_arrow, R_moment);
+
+% Legende um alle Stabelemente zu gruppieren
+hLegStaebe = plot(ax, NaN, NaN, 'w', 'LineWidth', 5, ...
+    'DisplayName', 'Stäbe');
+hLegStaebe.UserData = hgStab;
+hLegStaebe.HitTest  = 'off';
 
 hold(ax, 'off');
 
