@@ -2,8 +2,6 @@ function [out] = drawOriginalFig(ax, Model)
 
 % Knoten
 Ktab = Model.Input.Knoten;
-disp('Ktab: ');
-disp(Ktab);
 if istable(Ktab)
     Knoten = table2struct(Ktab);
 else

@@ -17,8 +17,9 @@ Einflusslinie = model.Input.Einflusslinie;
 t = tiledlayout(2, 1);
 title(t, "Einflusslinie");
 
-nexttile;
-drawOriginalFig(model);
+ax = nexttile;
+axis(ax, 'equal');
+drawOriginalFig(ax, model);
 title("Struktur");
 
 

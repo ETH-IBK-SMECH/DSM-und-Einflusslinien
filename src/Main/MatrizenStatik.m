@@ -46,7 +46,6 @@ try
 
     %% 7) Ergebnisse zusammenstellen + (optional) darstellen
     Model.Output = zusammenSetzen(analyseForOutput);
-
     if opts.renderOutput
         outputDarstellung(Model);
     end
