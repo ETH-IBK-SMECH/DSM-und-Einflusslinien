@@ -1,4 +1,4 @@
-function out = drawGelenk(ax, type, centre, meanL)
+function out = drawGelenk(ax, type, centre, meanL, parent)
 
 switch type
 
