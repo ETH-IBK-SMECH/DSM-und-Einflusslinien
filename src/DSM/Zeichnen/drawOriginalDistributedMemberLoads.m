@@ -4,8 +4,9 @@ function drawOriginalDistributedMemberLoads(ax, Knoten, Staebe, StabLast_vert, m
 for i = 1:numel(StabLast_vert)
     StabIdx = StabLast_vert(i).Stab;
     dir = StabLast_vert(i).Richtung;
-
     phys = StabLast_vert(i).Wert;
+
+    hg = hggroup(ax); % Groups the arrow elements and label together
 
     s = sign(phys);
     if s == 0, continue; end
@@ -20,6 +21,8 @@ for i = 1:numel(StabLast_vert)
         Knoten(Staebe(StabIdx).StartKnoten).yPos];
     L = Staebe(StabIdx).L;
 
+    jmid = 0.5*(sDist + eDist) * L;
+
     for j = linspace(sDist*L, eDist*L, 6)
         p1 = [j; 0];
         switch dir
@@ -32,29 +35,51 @@ for i = 1:numel(StabLast_vert)
         p1 = SKKord + R' * p1;
         p0 = SKKord + R' * p0;
 
-        drawArrow2(ax, p0, p1, 'b', meanL);
+        drawArrow2(ax, p0, p1, 'b', meanL, hg);
     end
 
     if dir == 2
+        base = SKKord + R' * [jmid; -LArr];
+
+        if s > 0
+            vAlign = 'top';
+        else
+            vAlign = 'bottom';
+        end
+
         sKordLine = [sDist * L; -LArr];
         eKordLine = [eDist * L; -LArr];
 
         sKL = SKKord + R' * sKordLine;
         eKL = SKKord + R' * eKordLine;
 
-        line(ax, [sKL(1), eKL(1)], [sKL(2), eKL(2)], 'color', 'b', 'LineWidth', 1.5);
+        line(ax, [sKL(1), eKL(1)], [sKL(2), eKL(2)], 'color', 'b', 'LineWidth', 1.5, 'Parent', hg);
    
-        ptext = getTextPosForDistributedLoad(ax, SKKord, R, L, s, sDist, eDist, LArr, 5);
-        text(ax, ptext(1), ptext(2), num2str(StabLast_vert(i).Wert), ...
-            'Clipping','on', 'HorizontalAlignment','center', 'VerticalAlignment','middle');
+        text(ax, base(1), base(2), num2str(StabLast_vert(i).Wert), ...
+            'Parent', hg, ...
+            'FontSize', 14, ...
+            'Margin', 1, ...
+            'HorizontalAlignment', 'center', ...
+            'VerticalAlignment', vAlign, ...
+            'Clipping', 'on', ...
+            'HitTest', 'off');
 
     elseif dir == 1
-        jmid = 0.5*(sDist + eDist) * L;
+        base = SKKord + R' * [jmid; 0];
 
-        base = SKKord + R' * [jmid; 0];            
-        ptext = offsetText(ax, base, [0; 1], 5);     
-        text(ax, ptext(1), ptext(2), num2str(StabLast_vert(i).Wert), ...
-            'Clipping','on', 'HorizontalAlignment','center', 'VerticalAlignment','bottom');
+        text(ax, base(1), base(2), num2str(StabLast_vert(i).Wert), ...
+            'Parent', hg, ...
+            'FontSize', 14, ...
+            'Margin', 1, ...
+            'HorizontalAlignment', 'center', ...
+            'VerticalAlignment', 'bottom', ...
+            'Clipping', 'on', ...
+            'HitTest', 'off');
+            
     end
+    hLeg = plot(ax, NaN, NaN, 'b', 'LineWidth', 1.5, ...
+        'DisplayName', sprintf('Vert. Stablast %d', StabIdx)); % Namensgebung vlt anpassen.
+    hLeg.UserData = hg;                       % link legend item -> group
+    hLeg.HitTest = 'off';                     % so legend click still works
 end
 end

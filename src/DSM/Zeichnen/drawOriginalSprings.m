@@ -6,6 +6,6 @@ for i = 1:numel(Feder)
     node = Feder(i).node;
     centre = [Knoten(node).xPos; Knoten(node).yPos];
 
-    drawFeder(ax, type, centre, 4*meanL);
+    drawFeder(ax, type, centre, 4*meanL, node);
 end
 end

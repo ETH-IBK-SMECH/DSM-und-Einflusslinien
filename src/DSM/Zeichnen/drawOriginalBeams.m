@@ -10,7 +10,7 @@ StaebeE = [Staebe.EndKnoten]';
 StaebeKORD = [StaebeS, StaebeE];
 
 % genau wie vorher:
-patch(ax, 'Faces', StaebeKORD, 'Vertices', KnotenKORD, 'LineWidth', 1);
+patch(ax, 'Faces', StaebeKORD, 'Vertices', KnotenKORD, 'LineWidth', 1, 'DisplayName','Stäbe');
 
 for i = 1:nStaebe
     sX = Knoten(Staebe(i).StartKnoten).xPos;

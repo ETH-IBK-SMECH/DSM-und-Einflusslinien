@@ -1,4 +1,4 @@
-function feder = drawFeder(ax, type, centre, L)
+function feder = drawFeder(ax, type, centre, L, nodeID)
 %type represents type of spring
 %kord are the coordinates of node as [x;y]
 %L is to normalize the supports with meanL
@@ -14,7 +14,7 @@ switch type
 
         KORDS = centre + [x; y];
 
-        patch(ax, KORDS(1, :), KORDS(2, :), 'k', 'LineWidth', 1);
+        patch(ax, KORDS(1, :), KORDS(2, :), 'k', 'LineWidth', 1, 'DisplayName', sprintf('Feder %d', nodeID));
 
     case 2
         x = [0, 0, -0.02, 0.02, -0.02, 0.02, -0.02, 0.02, 0, 0, -0.03, 0.03, NaN];
@@ -25,7 +25,7 @@ switch type
 
         KORDS = centre + [x; y];
 
-        patch(ax, KORDS(1, :), KORDS(2, :), 'k', 'LineWidth', 1);
+        patch(ax, KORDS(1, :), KORDS(2, :), 'k', 'LineWidth', 1, 'DisplayName', sprintf('Feder %d', nodeID));
 
     case 3
         angles = linspace(pi, -2*pi-pi/4, 100);
@@ -42,7 +42,7 @@ switch type
 
         KORDS = centre + [x; y];
 
-        patch(ax, KORDS(1, :), KORDS(2, :), 'k', 'LineWidth', 1);
+        patch(ax, KORDS(1, :), KORDS(2, :), 'k', 'LineWidth', 1, 'DisplayName', sprintf('Feder %d', nodeID));
 
 end
 

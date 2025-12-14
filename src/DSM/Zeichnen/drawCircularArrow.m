@@ -1,8 +1,11 @@
-function circArrow = drawCircularArrow(ax, radius, centre, sign, color)
+function circArrow = drawCircularArrow(ax, radius, centre, sign, color, parent)
 %radius as a number
 %centre as coordinates in format [x;y]
 %for sign just sign(torque)
 %color as 'g'
+if nargin < 6 || isempty(parent)
+    parent = ax;
+end
 
 switch sign
     case 1 %angles for arrow in positive direction
@@ -38,7 +41,14 @@ switch sign
 end
 
 
-patch(ax, xtip, ytip, color, 'EdgeColor', color);
-patch(ax, x, y, color, 'EdgeColor', color, 'LineWidth', 1.5);
+patch(ax, xtip, ytip, color, ...
+    'EdgeColor', color, ...
+    'Parent', parent, ...
+    'HitTest','off');
+patch(ax, x, y, color, ...
+    'EdgeColor', color, ...
+    'LineWidth', 1.5, ...
+    'Parent', parent, ...
+    'HitTest','off');
 
 end

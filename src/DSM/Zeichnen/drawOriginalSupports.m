@@ -52,11 +52,11 @@ for i = 1:size(Lager, 1)
                 R = [c s; -s c]; 
             end
 
-            drawLager(ax, type, centre, R, 0.6*meanL);
+            drawLager(ax, type, centre, R, 0.6*meanL, node);
 
         case {2, 3, 4}
             R = eye(2);
-            drawLager(ax, type, centre, R, 0.5*meanL);
+            drawLager(ax, type, centre, R, 0.5*meanL, node);
 
         case {5, 6}
             stabnodes = [Staebe.StartKnoten; Staebe.EndKnoten]';
@@ -66,7 +66,7 @@ for i = 1:size(Lager, 1)
             else
                 R = [-1, 0; 0, -1];
             end
-            drawLager(ax, type, centre, R, 0.6*meanL);
+            drawLager(ax, type, centre, R, 0.6*meanL, node);
     end
 end
 end

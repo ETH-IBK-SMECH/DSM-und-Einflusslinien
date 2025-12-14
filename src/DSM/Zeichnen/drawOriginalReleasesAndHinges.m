@@ -4,6 +4,7 @@ function drawOriginalReleasesAndHinges(ax, Knoten, Staebe, Stab, meanL, nKnoten,
 % - Momentengelenke (inkl. "globales" M-Gelenk am Knoten oder leicht versetzt)
 
 momentengelenk = true(1, nKnoten);
+disp('hereweare')
 
 % Querschnitt / EIinf + Releases aus Analysemodell übernehmen
 for i = 1:nStaebe

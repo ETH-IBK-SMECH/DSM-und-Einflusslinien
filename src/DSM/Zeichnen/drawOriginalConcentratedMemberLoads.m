@@ -6,6 +6,8 @@ for i = 1:numel(StabLast_konz)
     dir = StabLast_konz(i).Richtung;
     phys = StabLast_konz(i).Wert;
 
+    hg = hggroup(ax); % Groups the arrow elements and label together
+
     sDist = StabLast_konz(i).StartPosition;
 
     if dir ~= 3
@@ -33,23 +35,43 @@ for i = 1:numel(StabLast_konz)
     switch dir
         case {1, 2}
             p0 = SKKord + R' * p0;
+            if dir == 2 && phys > 0
+                vAlign = 'top';
+            else
+                vAlign = 'bottom';
+            end
 
-            drawArrow2(ax, p0, p1, 'r', meanL);
-            ptext = getTextPosFromArrow(ax, p0, s, 5);
-            text(ax, ptext(1), ptext(2), num2str(StabLast_konz(i).Wert), ...
-                'Clipping','on', 'HorizontalAlignment','center', 'VerticalAlignment','middle');
+            drawArrow2(ax, p0, p1, 'r', meanL, hg);
 
+            text(ax, p0(1), p0(2), num2str(StabLast_konz(i).Wert), ...
+                'Parent', hg, ...
+                'FontSize', 14, ...
+                'Margin', 1, ...
+                'HorizontalAlignment', 'center', ...
+                'VerticalAlignment', vAlign, ...
+                'Clipping', 'on', ...
+                'HitTest', 'off');
 
         case 3
              s = sign(phys);
              if s == 0, continue; end
 
-             drawCircularArrow(ax, R_moment, p1, s, 'r');
+             drawCircularArrow(ax, R_moment, p1, s, 'r', hg);
 
-             ptext = getTextPosFromMoment(ax, p1, R_moment, sign(phys), 5);
-             text(ax, ptext(1), ptext(2), num2str(StabLast_konz(i).Wert), ...
-                 'Clipping','on', 'HorizontalAlignment','left', 'VerticalAlignment','bottom');
+             base = p1 + [-s; -1] * (0.7 * R_moment);
+
+             text(ax, base(1), base(2), num2str(StabLast_konz(i).Wert), ...
+                 'Parent', hg, ...
+                 'FontSize', 14, ...
+                 'HorizontalAlignment', 'center', ...
+                 'VerticalAlignment', 'bottom', ...
+                 'Clipping', 'on', ...
+                 'HitTest', 'off');
 
     end
+    hLeg = plot(ax, NaN, NaN, 'r', 'LineWidth', 1.5, ...
+    'DisplayName', sprintf('Konz. Stablast %d', StabIdx)); % Namensgebung vlt anpassen.
+    hLeg.UserData = hg;                       % link legend item -> group
+    hLeg.HitTest = 'off';                     % legend click still works
 end
 end

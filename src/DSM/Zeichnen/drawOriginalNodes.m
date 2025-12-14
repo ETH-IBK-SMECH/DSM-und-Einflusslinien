@@ -5,16 +5,39 @@ function drawOriginalNodes(ax, Knoten)
         return;
     end
 
+    hg = hggroup(ax);
+
     KnotenKORD = table2array(struct2table(Knoten));
     x = KnotenKORD(:, 1);
     y = KnotenKORD(:, 2);
 
-    % IMPORTANT: ask "ishold" about THIS axes, not gca
     holdState = ishold(ax);
 
     hold(ax, 'on');
-    plot(ax, x, y, 'ko', 'MarkerFaceColor', 'r', 'MarkerSize', 6);
+    plot(ax, x, y, 'ko', 'MarkerFaceColor', 'r', 'MarkerSize', 10, 'Parent', hg);
 
+    n = numel(x);
+    for i = 1:n
+        basePoint = [x(i); y(i)];
+        text(ax, basePoint(1), basePoint(2), sprintf('%d', i), ...
+            'Parent', hg, ...
+            'FontSize', 11, ...
+            'Color', 'w', ...
+            'HorizontalAlignment', 'center', ...
+            'VerticalAlignment', 'middle', ...
+            'Clipping', 'on', ...
+            'HitTest', 'off');
+    end
+    
+    hLeg = plot(ax, NaN, NaN, ...
+    'o', ...                    % marker only
+    'Color', 'r', ...
+    'MarkerFaceColor', 'r', ...
+    'MarkerSize', 6, ...
+    'LineStyle', 'none', ...     % no line
+    'DisplayName', 'Knoten');
+    hLeg.UserData = hg;                       % link legend item -> group
+    hLeg.HitTest = 'off';                     % legend click still works
     if ~holdState
         hold(ax, 'off');
     end
