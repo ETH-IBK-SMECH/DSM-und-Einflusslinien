@@ -41,7 +41,7 @@ for i = 1:numel(StabLast_konz)
                 vAlign = 'bottom';
             end
 
-            drawArrow2(ax, p0, p1, 'r', meanL, hg);
+            drawArrow2(ax, p0, p1, 'r', hg);
 
             text(ax, p0(1), p0(2), num2str(StabLast_konz(i).Wert), ...
                 'Parent', hg, ...

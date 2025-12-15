@@ -51,7 +51,7 @@ for i = 1:size(SPC, 2)
                 vAlign = 'bottom';
             end
 
-            drawArrow2(ax, p0, p1, 'm', meanL);
+            drawArrow2(ax, p0, p1, 'm');
 
             text(ax, p0(1), p0(2), num2str(SPC(i).Reaktion), ...
                 'FontSize', 14, ...
@@ -101,7 +101,7 @@ if isfield(Feder, 'Reaktion')
                     vAlign = 'bottom';
                 end
 
-                drawArrow2(ax, p0, p1, 'm', meanL);
+                drawArrow2(ax, p0, p1, 'm');
 
                 text(ax, p0(1), p0(2), num2str(SPC(i).Reaktion), ...
                     'FontSize', 14, ...

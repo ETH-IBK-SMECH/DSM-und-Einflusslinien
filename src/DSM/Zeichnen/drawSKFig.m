@@ -2,7 +2,6 @@ function [out] = drawSKFig(model)
 
 Knoten = model.Analyse.Knoten;
 KnotenKORD = table2array(struct2table(Knoten));
-
 Stab = model.Analyse.Stab;
 nStaebe = numel(Stab);
 StaebeKORD = zeros(nStaebe, 2);
@@ -16,9 +15,15 @@ t = tiledlayout(nStaebe+1, 3);
 title(t, "Schnittkraftdiagramme");
 
 meanL = mean([model.Analyse.Stab.L]);
+xAll = KnotenKORD(:,1);
+yAll = KnotenKORD(:,2);
+Lsys = hypot(max(xAll)-min(xAll), max(yAll)-min(yAll));
+if ~isfinite(Lsys) || Lsys <= 0
+    Lsys = meanL;
+end
 
 %skalierung = -abs(1/(4 * log(meanL))); %falls die Schnittkräfte nicht ersichtlich sind ändere die skalierung wie z.b. in der nächsten Zeile
-skalierung = -1/(10*meanL); %ändere x*meanL wie du möchtest
+skalierung = -0.05 * Lsys;
 
 nexttile;
 for i = 1:nStaebe

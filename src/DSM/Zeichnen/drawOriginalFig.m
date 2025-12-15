@@ -106,7 +106,7 @@ drawOriginalNodalLoads(ax, Knoten, KnotenLast, meanL, nKL, L_arrow, R_moment);
 
 % Legende um alle Stabelemente zu gruppieren
 hLegStaebe = plot(ax, NaN, NaN, 'w', 'LineWidth', 5, ...
-    'DisplayName', 'Stäbe');
+    'DisplayName', 'Staebe');
 hLegStaebe.UserData = hgStab;
 hLegStaebe.HitTest  = 'off';
 

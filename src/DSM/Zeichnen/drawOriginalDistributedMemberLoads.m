@@ -35,7 +35,7 @@ for i = 1:numel(StabLast_vert)
         p1 = SKKord + R' * p1;
         p0 = SKKord + R' * p0;
 
-        drawArrow2(ax, p0, p1, 'b', meanL, hg);
+        drawArrow2(ax, p0, p1, 'b', hg);
     end
 
     if dir == 2
