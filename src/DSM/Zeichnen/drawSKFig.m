@@ -23,7 +23,7 @@ if ~isfinite(Lsys) || Lsys <= 0
 end
 
 %skalierung = -abs(1/(4 * log(meanL))); %falls die Schnittkräfte nicht ersichtlich sind ändere die skalierung wie z.b. in der nächsten Zeile
-skalierung = -0.05 * Lsys;
+skalierung = -0.08 * Lsys;
 
 nexttile;
 for i = 1:nStaebe

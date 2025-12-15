@@ -15,8 +15,10 @@ yAll = [Knoten.yPos];
 Lsys = hypot(max(xAll)-min(xAll), max(yAll)-min(yAll));
 if Lsys <= 0, Lsys = meanL; end
 
-L_arrow  = 0.15 * Lsys;   % constant reaction arrow length
-R_moment = 0.08 * Lsys;   % constant reaction moment radius
+%L_arrow  = 0.15 * Lsys;   % constant reaction arrow length
+%R_moment = 0.08 * Lsys;   % constant reaction moment radius
+L_arrow = 0.3 * meanL;
+R_moment = 0.1 * meanL;
 
 t = tiledlayout(fig, 1, 1);
 title(t, "Auflagerreaktionen")

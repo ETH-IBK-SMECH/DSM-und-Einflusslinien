@@ -48,8 +48,10 @@ if ~isfinite(Lsys) || Lsys <= 0
     Lsys = meanL;
 end
 
-L_arrow  = 0.15 * Lsys;   % base arrow length in plot units
-R_moment = 0.08 * Lsys;   % base moment arrow radius in plot units
+%L_arrow  = 0.15 * Lsys;   % base arrow length in plot units
+%R_moment = 0.08 * Lsys;   % base moment arrow radius in plot units
+L_arrow = 0.3 * meanL;
+R_moment = 0.1 * meanL;
 
 % StabLast_konz und StabLast_vert aus Analysemodell bauen
 StabLast_konz = struct('Stab', {}, 'Richtung', {}, 'Wert', {}, ...
