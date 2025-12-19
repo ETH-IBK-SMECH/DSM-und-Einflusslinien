@@ -25,7 +25,8 @@ title(t, "Auflagerreaktionen")
 
 ax = nexttile(t);
 axis(ax, 'equal');
-drawOriginalFig(ax, Model);
+beamnumbers = false;
+drawOriginalFig(ax, Model, beamnumbers);
 
 for i = 1:size(SPC, 2)
     KnotenIdx = SPC(i).node;

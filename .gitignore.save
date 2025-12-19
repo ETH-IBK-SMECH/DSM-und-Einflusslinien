@@ -1,5 +1,4 @@
 # List of untracked files to ignore
-
 # =========================
 # macOS
 # =========================
@@ -23,7 +22,3 @@
 # =========================
 MBeautifier-1.4.0/
 
-# =========================
-# Project-specific ignores
-# =========================
-Beispiele/legacy
