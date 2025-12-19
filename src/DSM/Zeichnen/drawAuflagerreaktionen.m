@@ -1,6 +1,6 @@
 function [out] = drawAuflagerreaktionen(Model)
 
-
+fig = figure;
 
 Knoten = struct( ...
     'xPos', num2cell([Model.Analyse.Knoten.x]), ...
@@ -10,49 +10,32 @@ SPC = Model.Analyse.SPC;
 meanL = mean([Model.Analyse.Stab.L]);
 Feder = Model.Analyse.Feder;
 
-t = tiledlayout(1, 1);
+xAll = [Knoten.xPos];
+yAll = [Knoten.yPos];
+Lsys = hypot(max(xAll)-min(xAll), max(yAll)-min(yAll));
+if Lsys <= 0, Lsys = meanL; end
+
+%L_arrow  = 0.15 * Lsys;   % constant reaction arrow length
+%R_moment = 0.08 * Lsys;   % constant reaction moment radius
+L_arrow = 0.3 * meanL;
+R_moment = 0.1 * meanL;
+
+t = tiledlayout(fig, 1, 1);
 title(t, "Auflagerreaktionen")
 
-drawOriginalFig(Model);
-
-
-formeanSPC = [];
-for i = 1:size(SPC, 2)
-    if SPC(i).dir == 3
-        formeanSPC(end+1) = SPC(i).Reaktion / 1000;
-    else
-        formeanSPC(end+1) = SPC(i).Reaktion;
-    end
-end
-meanSPC = abs(mean(formeanSPC));
-
+ax = nexttile(t);
+axis(ax, 'equal');
+drawOriginalFig(ax, Model);
 
 for i = 1:size(SPC, 2)
     KnotenIdx = SPC(i).node;
     dir = SPC(i).dir;
-    val = SPC(i).Reaktion / meanSPC;
-    LArr = val * 0.25 * meanL;
+    phys = SPC(i).Reaktion;
+    s = sign(phys);
+    if s == 0, continue; end
+    LArr = s * L_arrow;
 
     p1 = [Knoten(KnotenIdx).xPos; Knoten(KnotenIdx).yPos];
-
-    ptext = p1;
-
-    switch dir
-        case 1
-            if sign(val) == 1
-                ptext = ptext + [-0.2; -0.04] * meanL;
-            elseif sign(val) == -1
-                ptext = ptext + [0.2; -0.04] * meanL;
-            end
-        case 2
-            if sign(val) == 1
-                ptext = ptext + [0.02; -0.2] * meanL;
-            elseif sign(val) == -1
-                ptext = ptext + [-0.04; 0.2] * meanL;
-            end
-        case 3
-            ptext = ptext + [0.15; 0.15] * meanL;
-    end
 
     switch dir
         case 1
@@ -64,17 +47,33 @@ for i = 1:size(SPC, 2)
     switch dir
         case {1, 2}
             p0 = p0 + p1;
-
-            drawArrow2(p0, p1, 'm', meanL);
-            text(ptext(1), ptext(2), num2str(SPC(i).Reaktion));
-        case 3
-            if val >= 5
-                val = val / 1000;
+            if dir == 2 && phys > 0
+                vAlign = 'top';
+            else
+                vAlign = 'bottom';
             end
-            radius = abs(val) * meanL * 0.1;
 
-            drawCircularArrow(radius, p1, sign(val), 'm');
-            text(ptext(1), ptext(2), num2str(SPC(i).Reaktion));
+            drawArrow2(ax, p0, p1, 'g');
+
+            text(ax, p0(1), p0(2), num2str(abs(SPC(i).Reaktion)), ...
+                'FontSize', 14, ...
+                'Margin', 1, ...
+                'HorizontalAlignment', 'center', ...
+                'VerticalAlignment', vAlign, ...
+                'Clipping', 'on', ...
+                'HitTest', 'off');
+
+        case 3
+            drawCircularArrow(ax, R_moment, p1, sign(phys), 'g');
+            base = p1 + [-s; -1] * (0.7 * R_moment);
+            text(ax, base(1), base(2), num2str(abs(SPC(i).Reaktion)), ...
+                'FontSize', 14, ...
+                'Margin', 1, ...
+                'HorizontalAlignment', 'left', ...
+                'VerticalAlignment', 'bottom', ...
+                'Clipping', 'on', ...
+                'HitTest', 'off');
+
     end
 
 end
@@ -84,29 +83,12 @@ if isfield(Feder, 'Reaktion')
     for i = 1:size(Feder, 2)
         KnotenIdx = Feder(i).node;
         dir = Feder(i).dir;
-        val = Feder(i).Reaktion / meanSPC;
-        LArr = val * 0.25 * meanL;
+        phys = Feder(i).Reaktion;
+
+        s = sign(phys);
+        if s == 0, continue; end
 
         p1 = [Knoten(KnotenIdx).xPos; Knoten(KnotenIdx).yPos];
-
-        ptext = p1;
-
-        switch dir
-            case 1
-                if sign(val) == 1
-                    ptext = ptext + [-0.2; -0.04] * meanL;
-                elseif sign(val) == -1
-                    ptext = ptext + [0.2; -0.04] * meanL;
-                end
-            case 2
-                if sign(val) == 1
-                    ptext = ptext + [0.02; -0.2] * meanL;
-                elseif sign(val) == -1
-                    ptext = ptext + [-0.04; 0.2] * meanL;
-                end
-            case 3
-                ptext = ptext + [0.15; 0.15] * meanL;
-        end
 
         switch dir
             case 1
@@ -118,17 +100,34 @@ if isfield(Feder, 'Reaktion')
         switch dir
             case {1, 2}
                 p0 = p0 + p1;
-
-                drawArrow2(p0, p1, 'm', meanL);
-                text(ptext(1), ptext(2), num2str(SPC(i).Reaktion));
-            case 3
-                if val >= 5
-                    val = val / 1000;
+                if dir == 2 && phys > 0
+                    vAlign = 'top';
+                else
+                    vAlign = 'bottom';
                 end
-                radius = abs(val) * meanL * 0.1;
 
-                drawCircularArrow(radius, p1, sign(val), 'm');
-                text(ptext(1), ptext(2), num2str(SPC(i).Reaktion));
+                drawArrow2(ax, p0, p1, 'g');
+
+                text(ax, p0(1), p0(2), num2str(abs(SPC(i).Reaktion)), ...
+                    'FontSize', 14, ...
+                    'Margin', 1, ...
+                    'HorizontalAlignment', 'center', ...
+                    'VerticalAlignment', vAlign, ...
+                    'Clipping', 'on', ...
+                    'HitTest', 'off');
+
+            case 3
+                drawCircularArrow(ax, R_moment, p1, sign(phys), 'g');
+
+                base = p1 + [-s; -1] * (0.7 * R_moment);
+                text(ax, base(1), base(2), num2str(abs(SPC(i).Reaktion)), ...
+                    'FontSize', 14, ...
+                    'Margin', 1, ...
+                    'HorizontalAlignment', 'left', ...
+                    'VerticalAlignment', 'bottom', ...
+                    'Clipping', 'on', ...
+                    'HitTest', 'off');
+
         end
 
     end

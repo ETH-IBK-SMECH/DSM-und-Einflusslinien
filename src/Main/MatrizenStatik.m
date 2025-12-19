@@ -7,7 +7,9 @@ warning off backtrace
 if nargin < 2, opts = struct(); end
 opts = local_defaults(opts, struct( ...
     'mode', "solve", ...
-    'renderOutput', true ...
+    'renderOutput', true, ...
+    'throwOnError', false, ...
+    'verbose', false ...
     ));
 
 status = 1;
@@ -26,7 +28,13 @@ try
     [okA, anaIssues] = validateAnalysisModel(Model.Analyse, struct('requireFullModel', true));
     issues = [issues, anaIssues(:).']; %#ok<AGROW>
     if ~okA
-        error('Analyse-Validierung fehlgeschlagen:\n%s', local_issuesToString(anaIssues));
+        status  = -1;
+            Meldung = sprintf("Analyse-Validierung fehlgeschlagen:\n%s", local_issuesToString(anaIssues));
+            if opts.throwOnError
+                error('%s',Meldung);
+            else
+                return;
+            end
     end
     %% 4) Optionale Vorbereitung für Einflusslinien
     isEinfluss = isfield(Model.Analyse, 'gew_output') && Model.Analyse.gew_output == 2;
@@ -46,7 +54,6 @@ try
 
     %% 7) Ergebnisse zusammenstellen + (optional) darstellen
     Model.Output = zusammenSetzen(analyseForOutput);
-
     if opts.renderOutput
         outputDarstellung(Model);
     end
@@ -57,12 +64,12 @@ catch ME
     % Volle Fehlermeldung inkl. Stack in Meldung speichern
     Meldung = getReport(ME, 'extended', 'hyperlinks', 'on');
 
-    % Zusätzlich direkt im Command Window anzeigen:
-    fprintf(2, '%s\n', Meldung);  % 2 = stderr (rot im Command Window)
+    if opts.verbose
+            fprintf(2, '%s\n', Meldung);
+    end
 
-    % Optional: für Debug-Sessions trotzdem Fehler werfen
-    if ~isfield(opts, 'suppressErrors') || ~opts.suppressErrors
-        rethrow(ME); % oder: rethrowAsCaller(ME);
+    if opts.throwOnError
+        rethrow(ME);
     end
 end
 end

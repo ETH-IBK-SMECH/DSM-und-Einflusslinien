@@ -35,7 +35,7 @@ if ismember('Richtung', Td.Properties.VariableNames)
         rows = find(badDir);
         issues.ok = false;
         issues.messages{end+1} = sprintf( ...
-            'Tabelle "Verteilte Stablasten": Zeile(n) %s: Richtung muss ganzzahlig 1 (x) oder 2 (y) sein.', ...
+            'Tabelle "Verteilte Stablasten": Zeile(n) %s: Richtung muss x-Richtung oder y-Richtung sein.', ...
             num2str(rows.'));
     end
 end
@@ -57,26 +57,27 @@ haveStart = ismember('StartPosition', Td.Properties.VariableNames);
 haveEnd = ismember('EndPosition', Td.Properties.VariableNames);
 
 if haveStart
-    badStart = isnan(Td.StartPosition) | Td.StartPosition < 0;
+    badStart = isnan(Td.StartPosition) | Td.StartPosition < 0 | Td.StartPosition > 1;
     if any(badStart)
         rows = find(badStart);
         issues.ok = false;
         issues.messages{end+1} = sprintf( ...
-            'Tabelle "Verteilte Stablasten": Zeile(n) %s: Startposition muss ≥ 0 und numerisch sein.', ...
+            'Tabelle "Verteilte Stablasten": Zeile(n) %s: Startposition muss im Bereich [0, 1] liegen.', ...
             num2str(rows.'));
     end
 end
 
 if haveEnd
-    badEnd = isnan(Td.EndPosition) | Td.EndPosition < 0;
+    badEnd = isnan(Td.EndPosition) | Td.EndPosition < 0 | Td.EndPosition > 1;
     if any(badEnd)
         rows = find(badEnd);
         issues.ok = false;
         issues.messages{end+1} = sprintf( ...
-            'Tabelle "Verteilte Stablasten": Zeile(n) %s: Endposition muss ≥ 0 und numerisch sein.', ...
+            'Tabelle "Verteilte Stablasten": Zeile(n) %s: Endposition muss im Bereich [0, 1] liegen.', ...
             num2str(rows.'));
     end
 end
+
 
 if haveStart && haveEnd
     badOrder = Td.EndPosition < Td.StartPosition;

@@ -14,15 +14,12 @@ nStaebe = size(Stab, 2);
 
 Einflusslinie = model.Input.Einflusslinie;
 
-t = tiledlayout(2, 1);
+t = tiledlayout(1, 1);
 title(t, "Einflusslinie");
 
-nexttile;
-drawOriginalFig(model);
-title("Struktur");
-
-
-nexttile;
+ax = nexttile;
+hold(ax,'on');
+axis(ax,'equal');
 for i = 1:nStaebe
 
     R = Stab(i).R(1:2, 1:2);

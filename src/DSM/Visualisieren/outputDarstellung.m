@@ -9,8 +9,7 @@ switch gew_output
             && ~isempty(Model.Output.SKStab)
         drawSKFig(Model);
         end
-        figure('units', 'normalized', 'outerposition', [0.25, 0.25, 0.5, 0.5]);
-        drawFig(Model);
+        %drawFig(Model);   % Uncomment if you want orig. system popup
     case 2 %Einflusslinie
         drawVLFig(Model);
 

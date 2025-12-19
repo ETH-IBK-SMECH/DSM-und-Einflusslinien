@@ -1,6 +1,5 @@
-function [out] = drawOriginalFig(Model)
+function [out] = drawOriginalFig(ax, Model)
 
-% Darstellung basierend auf Model.Analyse mit Lager-Typen aus Model.Input
 % Knoten
 Ktab = Model.Input.Knoten;
 if istable(Ktab)
@@ -31,16 +30,28 @@ nStaebe = numel(StabTab);
 
 Staebe = struct( ...
     'StartKnoten', num2cell([StabTab.StartKnoten]), ...
-    'EndKnoten', num2cell([StabTab.EndKnoten]));
+    'EndKnoten',   num2cell([StabTab.EndKnoten]));
 
 % Lager: bleiben aus dem Input
 Lager = Model.Input.Lager;
 
-Feder = Model.Analyse.Feder; % struct mit .node, .dir, .val
+Feder    = Model.Analyse.Feder;      % struct mit .node, .dir, .val
 KnotenLast = Model.Analyse.KnotenLast; % struct mit .node, .dir, .val
-StabLast = Model.Analyse.StabLast; % struct mit .stab, .dir, .val, .sDist, .eDist, .typ
+StabLast   = Model.Analyse.StabLast;   % struct mit .stab, .dir, .val, .sDist, .eDist, .typ
 
+nKL = numel(KnotenLast);
 meanL = mean([Stab.L]);
+xAll = [Knoten.xPos];
+yAll = [Knoten.yPos];
+Lsys = hypot(max(xAll)-min(xAll), max(yAll)-min(yAll));
+if ~isfinite(Lsys) || Lsys <= 0
+    Lsys = meanL;
+end
+
+%L_arrow  = 0.15 * Lsys;   % base arrow length in plot units
+%R_moment = 0.08 * Lsys;   % base moment arrow radius in plot units
+L_arrow = 0.3 * meanL;
+R_moment = 0.1 * meanL;
 
 % StabLast_konz und StabLast_vert aus Analysemodell bauen
 StabLast_konz = struct('Stab', {}, 'Richtung', {}, 'Wert', {}, ...
@@ -53,353 +64,66 @@ for i = 1:numel(StabLast)
 
     if isDistributed
         idx = numel(StabLast_vert) + 1;
-        StabLast_vert(idx).Stab = StabLast(i).stab;
-        StabLast_vert(idx).Richtung = StabLast(i).dir;
-        StabLast_vert(idx).Wert = StabLast(i).val;
-        StabLast_vert(idx).StartPosition = StabLast(i).sDist;
-        StabLast_vert(idx).EndPosition = StabLast(i).eDist;
+        StabLast_vert(idx).Stab           = StabLast(i).stab;
+        StabLast_vert(idx).Richtung       = StabLast(i).dir;
+        StabLast_vert(idx).Wert           = StabLast(i).val;
+        StabLast_vert(idx).StartPosition  = StabLast(i).sDist;
+        StabLast_vert(idx).EndPosition    = StabLast(i).eDist;
     else
         idx = numel(StabLast_konz) + 1;
-        StabLast_konz(idx).Stab = StabLast(i).stab;
-        StabLast_konz(idx).Richtung = StabLast(i).dir;
-        StabLast_konz(idx).Wert = StabLast(i).val;
-        StabLast_konz(idx).StartPosition = StabLast(i).sDist;
-        StabLast_konz(idx).EndPosition = [];
+        StabLast_konz(idx).Stab           = StabLast(i).stab;
+        StabLast_konz(idx).Richtung       = StabLast(i).dir;
+        StabLast_konz(idx).Wert           = StabLast(i).val;
+        StabLast_konz(idx).StartPosition  = StabLast(i).sDist;
+        StabLast_konz(idx).EndPosition    = [];
     end
 end
 
-%mean konzentrierte Stablasten -> beachte ds momänt in kNmm erfasst wird -> dswege momänt dür 1000 teile
-if ~isempty(StabLast_konz) && isfield(StabLast_konz, 'Wert')
-    formeanSLk = [];
-    for i = 1:numel(StabLast_konz)
-        if StabLast_konz(i).Richtung == 3
-            formeanSLk(end+1) = StabLast_konz(i).Wert / 1000;
-        else
-            formeanSLk(end+1) = StabLast_konz(i).Wert;
-        end
-    end
-    meanSLk = abs(mean(abs(formeanSLk)));
-else
-    meanSLk = 1;
-end
+% ==== Ab hier nur noch Zeichnen: aufteilen in drawOriginalXY-Funktionen ====
 
-%mean verteilte Stablasten
-if ~isempty(StabLast_vert) && isfield(StabLast_vert, 'Wert')
-    formeanSLv = [];
-    for i = 1:numel(StabLast_vert)
-        if StabLast_vert(i).Richtung == 3
-            formeanSLv(end+1) = StabLast_vert(i).Wert / 1000;
-        else
-            formeanSLv(end+1) = StabLast_vert(i).Wert;
-        end
-    end
-    meanSLv = abs(mean(abs(formeanSLv)));
-else
-    meanSLv = 1;
-end
+hold(ax, 'on');
 
-%mean Knotenlasten
-if ~isempty(KnotenLast) && isfield(KnotenLast, 'val')
-    formeanKL = [];
-    nKL = numel(KnotenLast);
-    for i = 1:nKL
-        if KnotenLast(i).dir == 3
-            formeanKL(end+1) = KnotenLast(i).val / 1000;
-        else
-            formeanKL(end+1) = KnotenLast(i).val;
-        end
-    end
-    meanKL = abs(mean(abs(formeanKL)));
-else
-    meanKL = 1;
-    nKL = 0;
-end
+hgStab = hggroup(ax);
+hgStabNummer = hggroup(ax);
+% 1) Stäbe (mit L, c, s, R) zeichnen
+Staebe = drawOriginalBeams(ax, Knoten, Staebe, hgStab, hgStabNummer);
 
+% 2) Lager
+drawOriginalSupports(ax, Knoten, Staebe, Lager, meanL, nStaebe);
 
-%System (Knoten & Stäbe)
-KnotenKORD = table2array(struct2table(Knoten));
-StaebeS = [Staebe.StartKnoten]';
-StaebeE = [Staebe.EndKnoten]';
-StaebeKORD = [StaebeS, StaebeE];
+% 3) Federn
+drawOriginalSprings(ax, Knoten, Feder, meanL);
 
+% 4) Querschnitte (EIinf) + Gelenke (Releases & Momentengelenke)
+drawOriginalReleasesAndHinges(ax, Knoten, Staebe, Stab, meanL, nKnoten, nStaebe, hgStab);
 
-patch('Faces', StaebeKORD, 'Vertices', KnotenKORD, 'LineWidth', 1);
+% 5) Verteilte Stablasten
+drawOriginalDistributedMemberLoads(ax, Knoten, Staebe, StabLast_vert, meanL, 0.75*L_arrow);
 
-for i = 1:nStaebe
-    sX = Knoten(Staebe(i).StartKnoten).xPos;
-    eX = Knoten(Staebe(i).EndKnoten).xPos; %x-Koordinate für Start- und Endknoten
-    sY = Knoten(Staebe(i).StartKnoten).yPos;
-    eY = Knoten(Staebe(i).EndKnoten).yPos; %y-Koordinate für Start- und Endknoten
-    Staebe(i).L = sqrt((eX - sX)^2+(eY - sY)^2); %Stablänge
-    Staebe(i).c = (eX - sX) / Staebe(i).L; %Stabwinkel cosinus
-    Staebe(i).s = (eY - sY) / Staebe(i).L; %Stabwinkel sinus
-    Staebe(i).R = getR(Staebe(i).c, Staebe(i).s); %Rotationsmatrix
-end
+% 6) Konzentrierte Stablasten
+drawOriginalConcentratedMemberLoads(ax, Knoten, Staebe, StabLast_konz, meanL, L_arrow, R_moment);
 
+% 7) Knotenlasten
+drawOriginalNodalLoads(ax, Knoten, KnotenLast, meanL, nKL, L_arrow, R_moment);
 
-%Lager
-for i = 1:size(Lager, 1)
-    type = Lager.Lagerung(i);
-    node = Lager.Knoten(i);
-    centre = [Knoten(node).xPos; Knoten(node).yPos];
+% Legende um alle Stabelemente zu gruppieren
+hLegStaebe = plot(ax, NaN, NaN, 'w', 'LineWidth', 5, ...
+    'DisplayName', 'Staebe');
+hLegStaebe.UserData = hgStab;
+hLegStaebe.HitTest  = 'off';
 
-    switch type
-        case 1
-            stabnodes = [Staebe.StartKnoten; Staebe.EndKnoten]';
-            stabnodeidx = find(stabnodes == node);
-            if stabnodeidx / nStaebe <= 1
-                R = Staebe(stabnodeidx).R(1:2, 1:2);
-            else
-                stabnodeidx = stabnodeidx - nStaebe;
-                R = [-1, 0; 0, -1] * Staebe(stabnodeidx).R(1:2, 1:2);
-            end
-            drawLager(type, centre, R, 0.6*meanL);
-        case {2, 3, 4}
-            R = [1, 0; 0, 1];
-            drawLager(type, centre, R, 0.5*meanL);
-        case {5, 6}
-            stabnodes = [Staebe.StartKnoten; Staebe.EndKnoten]';
-            stabnodeidx = find(stabnodes == node);
-            if stabnodeidx / nStaebe <= 1
-                R = [1, 0; 0, 1];
-            else
-                R = [-1, 0; 0, -1];
-            end
-            drawLager(type, centre, R, 0.6*meanL);
-    end
+hLegStabNummer = plot(ax, NaN, NaN, ...
+    '>', ...                    % marker only
+    'Color', [1.0, 0.5, 0.0], ...
+    'MarkerFaceColor', [1.0, 0.5, 0.0], ...
+    'MarkerSize', 6, ...
+    'LineStyle', 'none', ...     % no line
+    'DisplayName', 'Stabnummer');
+    hLegStabNummer.UserData = hgStabNummer;                       % link legend item -> group
+    hLegStabNummer.HitTest = 'off';                     % legend click still
 
+hold(ax, 'off');
 
-end
+out = [];   % optional, just to have a defined output
 
-%Feder
-for i = 1:numel(Feder)
-    type = Feder(i).dir; % 1=x, 2=y, 3=Rotation
-    node = Feder(i).node;
-    centre = [Knoten(node).xPos; Knoten(node).yPos];
-
-    drawFeder(type, centre, 4*meanL);
-end
-
-
-%Querschnitte
-momentengelenk = true(1, nKnoten); %nur zum schauen ob momentengelenk für alle stäbe oder nur für den einen
-
-for i = 1:nStaebe
-    startK = Staebe(i).StartKnoten;
-    endK = Staebe(i).EndKnoten;
-
-    % dickere Linie für biegesteife Stäbe (EIinf Flag aus Analysemodell)
-    if isfield(Stab(i), 'EIinf') && Stab(i).EIinf
-        x = [Knoten(startK).xPos, Knoten(endK).xPos, NaN];
-        y = [Knoten(startK).yPos, Knoten(endK).yPos, NaN];
-        patch(x, y, 'k', 'LineWidth', 2.1, 'LineJoin', 'round');
-    end
-
-    % Releases direkt aus Analysemodell übernehmen
-    Staebe(i).sRelease = Stab(i).sRelease;
-    Staebe(i).eRelease = Stab(i).eRelease;
-
-    if ~isempty(Staebe(i).sRelease) && Staebe(i).sRelease ~= 3
-        momentengelenk(Staebe(i).StartKnoten) = false;
-    end
-    if ~isempty(Staebe(i).eRelease) && Staebe(i).eRelease ~= 3
-        momentengelenk(Staebe(i).EndKnoten) = false;
-    end
-end
-
-
-%Gelenke
-
-for i = 1:nStaebe
-
-    if (Staebe(i).sRelease == 3 & momentengelenk(Staebe(i).StartKnoten))
-        centre = [Knoten(Staebe(i).StartKnoten).xPos; Knoten(Staebe(i).StartKnoten).yPos];
-        drawGelenk(3, centre, meanL);
-    elseif (Staebe(i).sRelease == 3)
-        centre = [0.025 * meanL; 0];
-        centre = Staebe(i).R(1:2, 1:2)' * centre;
-        centre = [Knoten(Staebe(i).StartKnoten).xPos; Knoten(Staebe(i).StartKnoten).yPos] + centre;
-        drawGelenk(3, centre, meanL);
-    end
-    if (Staebe(i).eRelease == 3 & momentengelenk(Staebe(i).EndKnoten))
-        centre = [Knoten(Staebe(i).EndKnoten).xPos; Knoten(Staebe(i).EndKnoten).yPos];
-        drawGelenk(3, centre, meanL);
-    elseif (Staebe(i).eRelease == 3)
-        centre = [-0.025 * meanL; 0];
-        centre = Staebe(i).R(1:2, 1:2)' * centre;
-        centre = [Knoten(Staebe(i).EndKnoten).xPos; Knoten(Staebe(i).EndKnoten).yPos] + centre;
-        drawGelenk(3, centre, meanL);
-    end
-
-end
-
-
-%StabLasten_vert
-for i = 1:numel(StabLast_vert)
-    StabIdx = StabLast_vert(i).Stab;
-    dir = StabLast_vert(i).Richtung;
-    phys = StabLast_vert(i).Wert;
-
-    val = phys / meanSLv;
-    sDist = StabLast_vert(i).StartPosition;
-    eDist = StabLast_vert(i).EndPosition;
-    LArr = val * 0.125 * meanL;
-
-    R = Staebe(StabIdx).R(1:2, 1:2);
-    SKKord = [Knoten(Staebe(StabIdx).StartKnoten).xPos; Knoten(Staebe(StabIdx).StartKnoten).yPos];
-    L = Staebe(StabIdx).L;
-
-    for j = linspace(sDist*L, eDist*L, 6)
-        %p1 = [sDist * L; 0] + [j; 0];
-        p1 = [j; 0];
-        switch dir
-            case 1
-                %p0 = [sDist * L - LArr + j; 0];
-                p0 = [j - LArr; 0];
-            case 2
-                %p0 = [sDist * L + j; -LArr];
-                p0 = [j; -LArr];
-        end
-
-        p1 = SKKord + R' * p1;
-        p0 = SKKord + R' * p0;
-
-        drawArrow2(p0, p1, 'b', meanL);
-    end
-
-    if dir == 2
-        sKordLine = [sDist * L; -LArr];
-        eKordLine = [eDist * L; -LArr];
-
-        sKL = SKKord + R' * sKordLine;
-        eKL = SKKord + R' * eKordLine;
-
-        line([sKL(1), eKL(1)], [sKL(2), eKL(2)], 'color', 'b', 'LineWidth', 1.5);
-        center = (sKL + eKL) / 2;
-        ptext = getTextPos(center, dir, val, meanL);
-        text(ptext(1), ptext(2), num2str(StabLast_vert(i).Wert));
-    elseif dir == 1
-        centerLoc = [(sDist + eDist) / 2 * L; 0];
-        center = SKKord + R' * centerLoc;
-        ptext = getTextPos(center, dir, val, meanL);
-        text(ptext(1), ptext(2), num2str(StabLast_vert(i).Wert));
-    end
-
-
-end
-
-
-%StabLasten_konz
-for i = 1:numel(StabLast_konz)
-    StabIdx = StabLast_konz(i).Stab;
-    dir = StabLast_konz(i).Richtung;
-    phys = StabLast_konz(i).Wert;
-
-    if dir == 3
-        phys = phys / 1000; % kNmm -> kNm
-    end
-
-    val = phys / meanSLk;
-    sDist = StabLast_konz(i).StartPosition;
-    LArr = val * 0.25 * meanL;
-
-
-    R = Staebe(StabIdx).R(1:2, 1:2);
-    SKKord = [Knoten(Staebe(StabIdx).StartKnoten).xPos; Knoten(Staebe(StabIdx).StartKnoten).yPos];
-    L = Staebe(StabIdx).L;
-
-    p1 = [sDist * L; 0];
-
-    switch dir
-        case 1
-            p0 = [sDist * L - LArr; 0];
-        case 2
-            p0 = [sDist * L; -LArr];
-    end
-
-    p1 = SKKord + R' * p1;
-
-    switch dir
-        case {1, 2}
-            p0 = SKKord + R' * p0;
-
-            drawArrow2(p0, p1, 'r', meanL);
-            basePoint = (p0 + p1) / 2;
-            ptext = getTextPos(basePoint, dir, val, meanL);
-            text(ptext(1), ptext(2), num2str(StabLast_konz(i).Wert));
-        case 3
-            radius = abs(val) * meanL * 0.125;
-
-            drawCircularArrow(radius, p1, sign(val), 'r');
-            basePoint = p1;
-            ptext = getTextPos(basePoint, 3, val, meanL);
-            text(ptext(1), ptext(2), num2str(StabLast_konz(i).Wert));
-    end
-end
-
-
-%KnotenLast
-for i = 1:nKL
-    KnotenIdx = KnotenLast(i).node;
-    dir = KnotenLast(i).dir;
-    phys = KnotenLast(i).val;
-
-    if dir == 3
-        phys = phys / 1000; % kNmm -> kNm
-    end
-
-    val = phys / meanKL;
-
-    LArr = val * 0.25 * meanL;
-
-
-    p1 = [Knoten(KnotenIdx).xPos; Knoten(KnotenIdx).yPos];
-    ptext = getTextPos(p1, dir, val, meanL);
-
-    switch dir
-        case 1
-            p0 = [-LArr; 0];
-        case 2
-            p0 = [0; -LArr];
-    end
-
-    switch dir
-        case {1, 2}
-            p0 = p0 + p1;
-
-            drawArrow2(p0, p1, 'r', meanL);
-
-            text(ptext(1), ptext(2), num2str(KnotenLast(i).val));
-        case 3
-            radius = abs(val) * meanL * 0.125;
-
-            drawCircularArrow(radius, p1, sign(val), 'r');
-
-            text(ptext(1), ptext(2), num2str(KnotenLast(i).val));
-    end
-end
-
-
-end
-
-function ptext = getTextPos(basePoint, dir, val, meanL)
-
-ptext = basePoint;
-
-switch dir
-    case 1 % horizontal
-        if sign(val) >= 0
-            ptext = ptext + [-0.2; -0.04] * meanL;
-        else
-            ptext = ptext + [0.2; -0.04] * meanL;
-        end
-    case 2 % vertical
-        if sign(val) >= 0
-            ptext = ptext + [0.02; -0.2] * meanL;
-        else
-            ptext = ptext + [-0.04; 0.2] * meanL;
-        end
-    case 3 % moment
-        ptext = ptext + [0.15; 0.15] * meanL;
-end
 end

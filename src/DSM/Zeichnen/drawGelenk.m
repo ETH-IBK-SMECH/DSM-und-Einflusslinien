@@ -1,4 +1,4 @@
-function out = drawGelenk(type, centre, meanL)
+function out = drawGelenk(ax, type, centre, meanL, parent)
 
 switch type
 
@@ -10,7 +10,7 @@ switch type
         y = radius * sin(angles) + centre(2);
 
 
-        patch(x, y, 'w', 'LineWidth', 1.1);
+        patch(ax, x, y, 'w', 'LineWidth', 1.1, 'Parent', parent);
 end
 
 end

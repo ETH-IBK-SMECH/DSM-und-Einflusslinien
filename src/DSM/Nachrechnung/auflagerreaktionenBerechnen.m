@@ -2,6 +2,9 @@ function [Reactions, SPCout, FederOut] = auflagerreaktionenBerechnen(K_sys, U_sy
 % Auflagerreaktionen: R = K*U - (F_N - P_int) (physikalische DOF)
 nDOF = numel(U_sys);
 R_sys = K_sys * U_sys - (F_N - P_int);
+% Numerische Rundungsfehler null setzen
+tolR = 1e-12 * max(1, norm(R_sys, inf));
+R_sys(abs(R_sys) < tolR) = 0;
 Reactions = zeros(nDOF, 1);
 
 % SPC
