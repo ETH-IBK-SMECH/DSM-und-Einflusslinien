@@ -10,6 +10,11 @@ for i = 1:numel(Stab)
     end
     u_loc = rotiereGlobalToLocal_u(u_glob, Stab(i).R);
     q_loc = Stab(i).k_loc * u_loc + Stab(i).P_int;
+
+    % Numerische Rundungsfehler null setzen
+    tol = 1e-12 * max(1, max(abs(q_loc)));   % relative Toleranz
+    q_loc(abs(q_loc) < tol) = 0;
+
     q_glob = rotiereLocalToGlobal_F(q_loc, Stab(i).R);
 
     Stab(i).u_glob = u_glob;
@@ -17,9 +22,10 @@ for i = 1:numel(Stab)
     Stab(i).q_loc = q_loc;
     Stab(i).q_glob = q_glob;
     Stab(i).q_loc_sk = q_loc .* [-1; 1; -1; 1; -1; 1];
+
 end
 
-% Verdrehungen an Momentengelenken korrigieren (wie Original)
+% Verdrehungen an Momentengelenken korrigieren
 for i = 1:numel(Stab)
     if isfield(Stab(i), 'u_loc') && ~isempty(Stab(i).u_loc)
         Stab(i).u_loc = verdrehungMomentengelenk(Stab(i).u_loc, Stab(i).L, Stab(i).vorhandeneDOF);

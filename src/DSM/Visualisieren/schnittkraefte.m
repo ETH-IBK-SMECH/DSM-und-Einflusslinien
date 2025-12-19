@@ -141,7 +141,6 @@ end
 %% M Array
 
 for i = 1:nStaebe
-
     for j = 2:length(SKStab(i).KP_M) - 1
         if SKStab(i).Lastfall_M(j) == SKStab(i).Lastfall_M(j+1) && length(find(SKStab(i).Lastfall_M == SKStab(i).Lastfall_M(j))) == 2
             switch StabLast(SKStab(i).Lastfall_M(j)).typ
@@ -162,7 +161,7 @@ for i = 1:nStaebe
     end
     %SKStab(i).SK_M(end) = SKStab(i).q_loc_sk(6);
     %SKStab(i).SK_M(end) = SKStab(i).SK_M(end) + SKStab(i).SK_VfM(end-1)*SKStab(i).L*(SKStab(i).KP_M(end)-SKStab(i).KP_M(end-1));
-
+    SKStab(i).SK_M(1) = SKStab(i).q_loc_sk(3);
     for j = 2:length(SKStab(i).KP_M)
         SKStab(i).SK_M(j:end) = SKStab(i).SK_M(j:end) + SKStab(i).SK_VfM(j-1) * SKStab(i).L * (SKStab(i).KP_M(j) - SKStab(i).KP_M(j-1));
         if find(SKStab(i).Lastfall_M == SKStab(i).Lastfall_M(j), 1) == j
@@ -172,25 +171,27 @@ for i = 1:nStaebe
             end
         end
     end
-
+    %SKStab(i).SK_M(end) = analyseModel.Stab(i).q_loc_sk(6);
 
 end
 
 %% Skalierung
-
 for i = 1:nStaebe
-    SKStab(i).KP_N = SKStab(i).KP_N * SKStab(i).L;
-    SKStab(i).KP_V = SKStab(i).KP_V * SKStab(i).L;
-    SKStab(i).KP_M = SKStab(i).KP_M * SKStab(i).L;
+    L = SKStab(i).L;
 
-    SKStab(i).KP_N = [0, SKStab(i).KP_N, SKStab(i).L];
+    SKStab(i).KP_N = SKStab(i).KP_N * L;
+    SKStab(i).KP_V = SKStab(i).KP_V * L;
+    SKStab(i).KP_M = SKStab(i).KP_M * L;
+
+    SKStab(i).KP_N = [0, SKStab(i).KP_N, L];
     SKStab(i).SK_N = [0, SKStab(i).SK_N, 0];
-
-    SKStab(i).KP_V = [0, SKStab(i).KP_V, SKStab(i).L];
+    
+    SKStab(i).KP_V = [0, SKStab(i).KP_V, L];
     SKStab(i).SK_V = [0, SKStab(i).SK_V, 0];
-
-    SKStab(i).KP_M = [0, SKStab(i).KP_M, SKStab(i).L];
+    
+    SKStab(i).KP_M = [0, SKStab(i).KP_M, L];
     SKStab(i).SK_M = [0, SKStab(i).SK_M, 0];
+
 end
 
 %% zurück überweisen
@@ -199,3 +200,5 @@ out.SKStab = SKStab;
 
 
 end
+
+
