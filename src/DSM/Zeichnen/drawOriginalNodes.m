@@ -14,7 +14,7 @@ function drawOriginalNodes(ax, Knoten)
     holdState = ishold(ax);
 
     hold(ax, 'on');
-    plot(ax, x, y, 'ko', 'MarkerFaceColor', 'r', 'MarkerSize', 10, 'Parent', hg);
+    plot(ax, x, y, 'ko', 'MarkerFaceColor', 'm', 'MarkerSize', 10, 'Parent', hg);
 
     n = numel(x);
     for i = 1:n
@@ -31,8 +31,8 @@ function drawOriginalNodes(ax, Knoten)
     
     hLeg = plot(ax, NaN, NaN, ...
     'o', ...                    % marker only
-    'Color', 'r', ...
-    'MarkerFaceColor', 'r', ...
+    'Color', 'm', ...
+    'MarkerFaceColor', 'm', ...
     'MarkerSize', 6, ...
     'LineStyle', 'none', ...     % no line
     'DisplayName', 'Knoten');

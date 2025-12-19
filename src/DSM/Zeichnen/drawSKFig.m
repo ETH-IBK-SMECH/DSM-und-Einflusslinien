@@ -130,9 +130,10 @@ for i = 1:nStaebe
     nexttile;
     x = SKStab(i).KP_N;
     y = SKStab(i).SK_N;
-    plot(x, y, 'b');
     hold on
-    plot(x0, y0);
+    plot(x, y, 'b');
+    area(x, y, 'FaceColor', 'b', 'FaceAlpha', 0.3, 'EdgeColor','none');
+    plot(x0, y0, 'Color', get(gca,'XColor'), 'LineWidth', 1);
     ExtremasMarkieren(x, y);
     hold off
     title("Stab "+i+", N");
@@ -149,9 +150,10 @@ for i = 1:nStaebe
     nexttile;
     x = SKStab(i).KP_V;
     y = SKStab(i).SK_V;
-    plot(x, y, 'b');
     hold on
-    plot(x0, y0);
+    plot(x, y, 'b');
+    area(x, y, 'FaceColor', 'b', 'FaceAlpha', 0.3, 'EdgeColor','none');
+    plot(x0, y0, 'Color', get(gca,'XColor'), 'LineWidth', 1);
     ExtremasMarkieren(x, y);
     hold off
     title("Stab "+i+", V");
@@ -168,10 +170,11 @@ for i = 1:nStaebe
     nexttile;
     x = SKStab(i).KP_M;
     y = SKStab(i).SK_M;
-    plot(x, y, 'b');
     %plot(SKStab(i).KP_M,SKStab(i).SK_VfM); %für Kontrolle von VfM
     hold on
-    plot(x0, y0);
+    plot(x, y, 'b');
+    area(x, y, 'FaceColor', 'b', 'FaceAlpha', 0.3, 'EdgeColor','none');
+    plot(x0, y0, 'Color', get(gca,'XColor'), 'LineWidth', 1);
     ExtremasMarkieren(x, y);
     hold off
     title("Stab "+i+", M");
@@ -194,29 +197,38 @@ end
 function ExtremasMarkieren(x, y)
 % Maxima, Minima und Nullpunkte mit rotem Punkt markieren
 
-    % make column vectors
     x = x(:);
     y = y(:);
+    % entfernt die Anfangs und Endpunkte
+    if numel(x) < 3
+        return
+    end
+    x = x(2:end-1);
+    y = y(2:end-1);
 
-    % snap numerical noise
+    % Numerische Nullstellen beheben
     tol = 1e-12 * max(1, max(abs(y)));
     y(abs(y) < tol) = 0;
 
     hold on
 
-    %% --- Maxima ---
+    % --- Endpunkte immer zeichnen ---
+    plot(x(1), y(1), 'ro', 'MarkerFaceColor','r')
+    plot(x(end), y(end), 'ro', 'MarkerFaceColor','r')
+
+    % --- Maxima ---
     ymax = max(y);
     imax = find(abs(y - ymax) < tol);
 
     plot(x(imax), y(imax), 'ro', 'MarkerFaceColor','r')
 
-    %% --- Minima ---
+    % --- Minima ---
     ymin = min(y);
     imin = find(abs(y - ymin) < tol);
 
     plot(x(imin), y(imin), 'ro', 'MarkerFaceColor','r')
 
-    %% --- Nullpunkte
+    % --- Nullpunkte
     iz = find(y(1:end-1).*y(2:end) < 0);   % sign change
     for k = iz(:).'
         % lineare Interpolation für bessere Nullpunkte

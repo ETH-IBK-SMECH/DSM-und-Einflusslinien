@@ -84,9 +84,9 @@ end
 hold(ax, 'on');
 
 hgStab = hggroup(ax);
-
+hgStabNummer = hggroup(ax);
 % 1) Stäbe (mit L, c, s, R) zeichnen
-Staebe = drawOriginalBeams(ax, Knoten, Staebe, hgStab);
+Staebe = drawOriginalBeams(ax, Knoten, Staebe, hgStab, hgStabNummer);
 
 % 2) Lager
 drawOriginalSupports(ax, Knoten, Staebe, Lager, meanL, nStaebe);
@@ -111,6 +111,16 @@ hLegStaebe = plot(ax, NaN, NaN, 'w', 'LineWidth', 5, ...
     'DisplayName', 'Staebe');
 hLegStaebe.UserData = hgStab;
 hLegStaebe.HitTest  = 'off';
+
+hLegStabNummer = plot(ax, NaN, NaN, ...
+    '>', ...                    % marker only
+    'Color', [1.0, 0.5, 0.0], ...
+    'MarkerFaceColor', [1.0, 0.5, 0.0], ...
+    'MarkerSize', 6, ...
+    'LineStyle', 'none', ...     % no line
+    'DisplayName', 'Stabnummer');
+    hLegStabNummer.UserData = hgStabNummer;                       % link legend item -> group
+    hLegStabNummer.HitTest = 'off';                     % legend click still
 
 hold(ax, 'off');
 

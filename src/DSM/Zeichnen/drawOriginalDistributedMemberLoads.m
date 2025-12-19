@@ -35,7 +35,7 @@ for i = 1:numel(StabLast_vert)
         p1 = SKKord + R' * p1;
         p0 = SKKord + R' * p0;
 
-        drawArrow2(ax, p0, p1, 'b', hg);
+        drawArrow2(ax, p0, p1, 'r', hg);
     end
 
     if dir == 2
@@ -53,9 +53,9 @@ for i = 1:numel(StabLast_vert)
         sKL = SKKord + R' * sKordLine;
         eKL = SKKord + R' * eKordLine;
 
-        line(ax, [sKL(1), eKL(1)], [sKL(2), eKL(2)], 'color', 'b', 'LineWidth', 1.5, 'Parent', hg);
+        line(ax, [sKL(1), eKL(1)], [sKL(2), eKL(2)], 'color', 'r', 'LineWidth', 1.5, 'Parent', hg);
    
-        text(ax, base(1), base(2), num2str(StabLast_vert(i).Wert), ...
+        text(ax, base(1), base(2), num2str(abs(StabLast_vert(i).Wert)), ...
             'Parent', hg, ...
             'FontSize', 14, ...
             'Margin', 1, ...
@@ -67,7 +67,7 @@ for i = 1:numel(StabLast_vert)
     elseif dir == 1
         base = SKKord + R' * [jmid; 0];
 
-        text(ax, base(1), base(2), num2str(StabLast_vert(i).Wert), ...
+        text(ax, base(1), base(2), num2str(abs(StabLast_vert(i).Wert)), ...
             'Parent', hg, ...
             'FontSize', 14, ...
             'Margin', 1, ...
@@ -78,7 +78,7 @@ for i = 1:numel(StabLast_vert)
             
     end
     hLeg = plot(ax, NaN, NaN, 'b', 'LineWidth', 1.5, ...
-        'DisplayName', sprintf('Vert. Stablast %d', StabIdx)); % Namensgebung vlt anpassen.
+        'DisplayName', sprintf('Vert. Stablast S%d', StabIdx)); % Namensgebung vlt anpassen.
     hLeg.UserData = hg;                       % link legend item -> group
     hLeg.HitTest = 'off';                     % so legend click still works
 end
