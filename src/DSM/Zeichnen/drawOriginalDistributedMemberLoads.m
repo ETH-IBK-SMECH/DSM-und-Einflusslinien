@@ -77,7 +77,7 @@ for i = 1:numel(StabLast_vert)
             'HitTest', 'off');
             
     end
-    hLeg = plot(ax, NaN, NaN, 'b', 'LineWidth', 1.5, ...
+    hLeg = plot(ax, NaN, NaN, 'r', 'LineWidth', 1.5, ...
         'DisplayName', sprintf('Vert. Stablast S%d', StabIdx)); % Namensgebung vlt anpassen.
     hLeg.UserData = hg;                       % link legend item -> group
     hLeg.HitTest = 'off';                     % so legend click still works
