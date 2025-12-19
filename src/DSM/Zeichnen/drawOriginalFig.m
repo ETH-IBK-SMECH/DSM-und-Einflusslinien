@@ -1,5 +1,8 @@
-function [out] = drawOriginalFig(ax, Model)
+function [out] = drawOriginalFig(ax, Model, beamnumbers)
 
+if nargin < 3
+    beamnumbers = true;
+end
 % Knoten
 Ktab = Model.Input.Knoten;
 if istable(Ktab)
@@ -86,7 +89,7 @@ hold(ax, 'on');
 hgStab = hggroup(ax);
 hgStabNummer = hggroup(ax);
 % 1) Stäbe (mit L, c, s, R) zeichnen
-Staebe = drawOriginalBeams(ax, Knoten, Staebe, hgStab, hgStabNummer);
+Staebe = drawOriginalBeams(ax, Knoten, Staebe, hgStab, hgStabNummer, beamnumbers);
 
 % 2) Lager
 drawOriginalSupports(ax, Knoten, Staebe, Lager, meanL, nStaebe);

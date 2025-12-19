@@ -55,6 +55,9 @@ out.SPC = SPC;
 
 out.Einflusslinie = Einflusslinie;
 out.Einflusslinie.cutNodes = [Kneu_1, Kneu_2];
+if ~isfield(out.Einflusslinie, 'keepMask')
+    out.Einflusslinie.keepMask = true(1, aM.Info.nKnotenDOF); 
+end
 
 % Info konsistent halten, falls vorhanden
 if isfield(out, 'Info')

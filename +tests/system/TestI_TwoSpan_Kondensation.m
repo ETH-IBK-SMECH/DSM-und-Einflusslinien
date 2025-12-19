@@ -204,8 +204,9 @@ classdef TestI_TwoSpan_Kondensation < matlab.unittest.TestCase
             % Select: all 3 comps at node 2 should be made "internal"
             comp = logical([1, 1, 1]);
 
-            nZiel = n_free; % for this unit test: no LM rows, so equals #free DOFs
-            mask_keep_ff = dofsZuKondensieren(M, DOF, 2, comp, nZiel); % keep-mask over FREE DOFs
+            freeList = find(DOF(:) > 0);          % global IDs of free DOFs (this is your assumed free ordering)
+            kond = struct('DOF', freeList(:));    % current impl expects kond.DOF(:) == find(kond.f)
+            mask_keep_ff = dofsZuKondensieren(M, DOF, kond, 2, comp);
 
             % Assert size
             tc.verifyEqual(numel(mask_keep_ff), n_free, ...

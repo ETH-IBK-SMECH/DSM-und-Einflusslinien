@@ -17,6 +17,9 @@ g2 = DOF(loc2);
 g2 = g2(:);
 
 % --- Nur Komponenten behalten, die auf BEIDEN Seiten existieren + keepMask ---
+if isfield(Einflusslinie,'keepMask') && ~isempty(Einflusslinie.keepMask)
+    keep = keep & logical(Einflusslinie.keepMask(:));
+end
 keep = keep & (g1 ~= 0) & (g2 ~= 0);
 alive = find(keep); % Indizes in {1..nkd}, die aktiv sind
 m = numel(alive); % Anzahl LM-Gleichungen
