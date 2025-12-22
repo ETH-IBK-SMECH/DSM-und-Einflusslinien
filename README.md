@@ -98,6 +98,12 @@ Beispielhafte Resultate aus der Software:
    ```matlab
    GUI
 
+---
+
+## Video-Tutorial
+
+[![Video-Tutorial zur DSM Lernsoftware](docs/figures/video_thumbnail.png)](video link)
+
 ## Zitieren dieser Software
 
 ## Lizenz
