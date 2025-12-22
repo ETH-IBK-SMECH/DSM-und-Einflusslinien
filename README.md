@@ -1,27 +1,104 @@
-# Lernsoftware zur direkten Steifigkeitsmethode
+# Lernsoftware zur Direkten Steifigkeitsmethode (DSM)
 
-Diese Software dient der Vorlesung "Baustatik II", welche im 4.Semester des BSc Bauingenieurwesens an der ETH Zürich angeboten wird. Sie soll den Studierenden die Möglichkeit bieten eigene Tragsysteme zu entwerfen, dessen **Schnittkräfte**, **Auflagerreaktionen** oder **Einflusslinien** bestimmt werden. Diese können mit den eigenen Lösungen verglichen werden. Dadurch bietet die Software weitere Übungsmöglichkeiten nebst den Hausübungen und Kolloquien. 
-Dies wurde in MATLAB entwickelt, da die Studierenden durch die Bonus-Abgaben bereits damit vertraut sind.
-# Installation / Nutzung
+MATLAB-basierte **Lehrsoftware zur Berechnung von Schnittkräften, Auflagerreaktionen und Einflusslinien** mithilfe der **Direkten Steifigkeitsmethode (DSM)** – inklusive **grafischer Benutzeroberfläche (GUI)**.
 
-Um die Software herunterzuladen, drücke auf den grünen Knopf 'Code' und dort auf 'Download ZIP'. Danach kannst du im _src_-Ordner das InputFile (file _InputFile.m_) öffnen. Weitere Instruktionen zu wie man die Software verwendet sind direkt im InputFile erklärt.
+Die Software richtet sich primär an Studierende der Vorlesung **„Baustatik II"** im 4. Semester des Bachelorstudiums Bauingenieurwissenschaften an der **ETH Zürich**.
 
-Die Software wurde mit dem Matlabrelease 2022b getestet.
+---
 
-# Funktionsumfang
-Mit der Software können eigene Tragsysteme mit verschiedenen Elementen (auch Federn, vorgeschriebene Verschiebungen, alle Stabendegelenke, verschiedene Arten von Lasten) entworfen werden. Danach kann ausgewählt werden, ob die Schnittkräfte, die Auflagerreaktionen oder die Einflusslinie angezeigt werden sollen. Je nach gewünschtem Output muss man verschiedene Schritte im InputFile bearbeiten, dies ist jedoch im InputFile genauer erklärt.
+## Motivation & Zielsetzung
 
-Hier zwei Beispiele:
-![](docs/figures/SKDiagramm_10.jpg)
-![](docs/figures/EL_K7_2_Mc.jpg)
+Die Software soll Studierenden ermöglichen,
 
-Auch bietet die Software die Möglichkeit Stäbe des Tragwerks zu Teilsystemen zusammenzusetzen. Diese Option ist jedoch noch nicht vollständig integriert und ist für die Zukunft vorgesehen.
+- **eigene Tragsysteme zu modellieren**,
+- deren **Schnittkräfte**, **Auflagerreaktionen** oder **Einflusslinien** zu berechnen,
+- und die Resultate direkt mit eigenen Handrechnungen zu vergleichen.
 
-# Beteiligte Personen
-Diese Software wurde als BA-Arbeit von T. Kirupakaran unter der Betreuung von Dr. A. Egger und P. Sieber entwickelt. Die betreuende Dozentin war Prof. Dr. Eleni Chatzi.
+Damit bietet sie zusätzliche Übungsmöglichkeiten neben Hausübungen und Kolloquien und unterstützt ein tieferes Verständnis der DSM sowie von Einflusslinien.
 
+Die Wahl von **MATLAB** als Entwicklungsumgebung wurde bewusst gewählt, da Studierende bereits durch Bonus-Abgaben und Übungen mit MATLAB vertraut sind.
 
-# Zitieren dieser Software
+---
 
-# Lizenz
+## Features
+
+- Direkte Steifigkeitsmethode (DSM)
+- Berechnung von:
+  - Schnittkräften
+  - Auflagerreaktionen
+  - Einflusslinien (Lagerreaktionen und Schnittgrössen)
+- Unterstützung für:
+  - Punktlasten (Knoten und Stab) und Linienlasten
+  - Federn
+  - Vorgeschriebene Verschiebungen
+  - Alle Stabendgelenke (Normalkraft-, Querkraft-, Momentengelenke)
+- **Grafische Benutzeroberfläche (GUI)** zur interaktiven Eingabe und Visualisierung
+- Robuste Eingabevalidierung mit verständlichen Fehlermeldungen
+- Konzeptionelle Implementierung statischer Kondensation
+
+--- 
+
+## GUI & Erweiterbarkeit
+
+Die GUI stellt die **primäre Schnittstelle** zur Software dar und erlaubt es, Tragwerke
+schrittweise aufzubauen und Resultate direkt visuell zu überprüfen.
+
+Der zugrunde liegende Code ist **modular** aufgebaut:
+
+- Neue Elemente, Lastfälle oder Auswertungen können einfach ergänzt werden.
+- GUI und Rechenkern können unabhängig weiterentwickelt werden.
+- Die Software kann als **Grundlage für zukünftige studentische Projektarbeiten** dienen.
+
+Der rechnerische Kern ist zusätzlich durch ein **Unit- und System-Test-Framework** abgesichert, um mechanische Korrektheit und Robustheit bei Erweiterungen zu gewährleisten.
+
+Für Studierende, die sich vertieft mit der Implementierung der DSM auseinandersetzen möchten, stellt die Datei `src/Main/DirectStiffnessMethod.m` den **zentralen Einstiegspunkt** dar. Dort sind die wesentlichen mechanischen Rechenschritte der Direkten Steifigkeitsmethode klar aufgeführt und **strukturell analog zur Behandlung im Kurs „Baustatik II"** organisiert.
+
+---
+
+## GUI & Ergebnisbeispiele
+
+Beispielhafte Resultate aus der Software:
+
+<table>
+  <tr>
+    <td align="center">
+      <img src="docs/figures/einflusslinie.png" width="100%">
+      <br>
+      <em>Einflusslinie (Beispiel)</em>
+    </td>
+    <td align="center">
+      <img src="docs/figures/system_vorschau.png" width="100%">
+      <br>
+      <em>Systemvorschau in der GUI</em>
+    </td>
+  </tr>
+</table>
+
+<img src="docs/figures/schnittkraefte.png" width="100%">
+<em>Schnittkraftdiagramme (N, V, M)</em>
+
+<br><br>
+
+<img src="docs/figures/GUI_berechnung.png" width="100%">
+<em>Eingabe und Visualisierung in der GUI</em>
+
+---
+
+## Installation & Nutzung
+
+### Voraussetzungen
+
+- MATLAB **R2025b** (getestet; frühere Versionen nicht verifiziert)  
+
+### Installation
+
+1. Klicke auf **Code → Download ZIP** und entpacke das Repository *(alternativ: Repository klonen mit Git)*
+2. Öffne MATLAB, indem du die Datei `startup.m` per Doppelklick öffnest. Dadurch wird der Projektpfad korrekt gesetzt.
+3. Starte die grafische Benutzeroberfläche, indem du im MATLAB Command Window eingibst:
+   ```matlab
+   GUI
+
+## Zitieren dieser Software
+
+## Lizenz
 
