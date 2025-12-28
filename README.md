@@ -6,6 +6,94 @@ Die Software richtet sich primär an Studierende der Vorlesung **„Baustatik II
 
 ---
 
+## Installation & Nutzung
+
+### Voraussetzungen
+
+- MATLAB **R2025b** (getestet; frühere Versionen nicht verifiziert)  
+
+### Installation
+
+**Variante 1: Repository klonen**
+
+Führe den folgenden Befehl in einem Terminal aus:
+
+    git clone https://github.com/ETH-IBK-SMECH/DSM-und-Einflusslinien.git
+
+**Variante 2: ZIP-Download**
+
+1. Klicke auf **Code → Download ZIP**
+2. Entpacke das Repository
+
+### Start der Software
+
+1. Öffne MATLAB, indem du die Datei `startup.m` per Doppelklick öffnest. Dadurch wird der Projektpfad korrekt gesetzt.
+
+2. Starte die grafische Benutzeroberfläche, indem du im MATLAB Command Window eingibst:
+
+       GUI
+
+---
+
+## Projektstruktur
+
+Die Software ist modular aufgebaut und weist eine klare Trennung zwischen Rechenkern (DSM), grafischer Benutzeroberfläche (GUI) und dem übergeordneten Ausführungsablauf auf.
+
+src/
+├── Main/
+│   ├── MatrizenStatik.m                 # Hauptablauf
+│   └── DirectStiffnessMethod.m          # DSM-Steuerung
+├── DSM/                                 # Solverkern (Direkte Steifigkeitsmethode)
+│   ├── Vorbereitung/                    # Eingabeaufbereitung
+│   ├── Assemblierung/                   # Systemaufbau
+│   ├── Loesen/                          # Lösen des Gleichungssystems
+│   ├── Nachrechnung/                    # Schnittgrössen und Reaktionen
+│   └── Output/                          # Ausgabe und Visualisierung
+└── GUI/
+    ├── @GUI/
+    │   ├── GUI.mlapp                    # Benutzeroberfläche
+    │   ├── guiToInput.m                 # GUI → Solver
+    │   ├── buildPreviewModel.m          # Vorschau-Modell
+    │   └── updateLiveViewer.m           # Live-Darstellung
+    └── Validation/                      # Eingabeprüfung
+
+---
+
+## GUI & Ergebnisbeispiele
+
+Beispielhafte Resultate aus der Software:
+
+<table>
+  <tr>
+    <td align="center">
+      <img src="docs/figures/einflusslinie.png" width="100%">
+      <br>
+      <em>Einflusslinie (Beispiel)</em>
+    </td>
+    <td align="center">
+      <img src="docs/figures/system_vorschau.png" width="100%">
+      <br>
+      <em>Systemvorschau in der GUI</em>
+    </td>
+  </tr>
+</table>
+
+<img src="docs/figures/schnittkraefte.png" width="100%">
+<em>Schnittkraftdiagramme (N, V, M)</em>
+
+<br><br>
+
+<img src="docs/figures/GUI_berechnung.png" width="100%">
+<em>Eingabe und Visualisierung in der GUI</em>
+
+---
+
+## Video-Tutorial
+
+[![Video-Tutorial zur DSM Lernsoftware](docs/figures/video_thumbnail.png)](video link)
+
+---
+
 ## Motivation & Zielsetzung
 
 Die Software soll Studierenden ermöglichen,
@@ -55,56 +143,21 @@ Für Studierende, die sich vertieft mit der Implementierung der DSM auseinanders
 
 ---
 
-## GUI & Ergebnisbeispiele
+## Hinweise und Support
 
-Beispielhafte Resultate aus der Software:
+Bei Problemen, Fehlern oder Verbesserungsvorschlägen:
 
-<table>
-  <tr>
-    <td align="center">
-      <img src="docs/figures/einflusslinie.png" width="100%">
-      <br>
-      <em>Einflusslinie (Beispiel)</em>
-    </td>
-    <td align="center">
-      <img src="docs/figures/system_vorschau.png" width="100%">
-      <br>
-      <em>Systemvorschau in der GUI</em>
-    </td>
-  </tr>
-</table>
-
-<img src="docs/figures/schnittkraefte.png" width="100%">
-<em>Schnittkraftdiagramme (N, V, M)</em>
-
-<br><br>
-
-<img src="docs/figures/GUI_berechnung.png" width="100%">
-<em>Eingabe und Visualisierung in der GUI</em>
+- Bitte zuerst prüfen, ob bereits ein entsprechendes **Issue** existiert
+- Andernfalls ein neues **GitHub Issue** eröffnen
+- Alternativ direkt Kontakt mit den **Betreuenden des Projekts** aufnehmen
 
 ---
-
-## Installation & Nutzung
-
-### Voraussetzungen
-
-- MATLAB **R2025b** (getestet; frühere Versionen nicht verifiziert)  
-
-### Installation
-
-1. Klicke auf **Code → Download ZIP** und entpacke das Repository *(alternativ: Repository klonen mit Git)*
-2. Öffne MATLAB, indem du die Datei `startup.m` per Doppelklick öffnest. Dadurch wird der Projektpfad korrekt gesetzt.
-3. Starte die grafische Benutzeroberfläche, indem du im MATLAB Command Window eingibst:
-   ```matlab
-   GUI
-
----
-
-## Video-Tutorial
-
-[![Video-Tutorial zur DSM Lernsoftware](docs/figures/video_thumbnail.png)](video link)
 
 ## Zitieren dieser Software
 
+---
+
 ## Lizenz
+
+---
 
