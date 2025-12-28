@@ -51,7 +51,8 @@ src/
 │   ├── Assemblierung/                   # Systemaufbau
 │   ├── Loesen/                          # Lösen des Gleichungssystems
 │   ├── Nachrechnung/                    # Schnittgrössen und Reaktionen
-│   └── Output/                          # Ausgabe und Visualisierung
+│   ├── Output/                          # Ausgabe und Visualisierung
+│   └── Hilfsfunktionen/                 # Allgemeine Hilfs- und Utility-Funktionen
 └── GUI/
     ├── @GUI/
     │   ├── GUI.mlapp                    # Benutzeroberfläche
