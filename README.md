@@ -39,6 +39,9 @@ Führe den folgenden Befehl in einem Terminal aus:
 
 Die Software ist modular aufgebaut und weist eine klare Trennung zwischen Rechenkern (DSM), grafischer Benutzeroberfläche (GUI) und dem übergeordneten Ausführungsablauf auf.
 
+
+
+```text
 src/
 ├── Main/
 │   ├── MatrizenStatik.m                 # Hauptablauf
@@ -56,6 +59,7 @@ src/
     │   ├── buildPreviewModel.m          # Vorschau-Modell
     │   └── updateLiveViewer.m           # Live-Darstellung
     └── Validation/                      # Eingabeprüfung
+```
 
 ---
 
