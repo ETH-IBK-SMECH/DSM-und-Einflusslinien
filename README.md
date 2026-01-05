@@ -130,6 +130,6 @@ Bei Problemen, Fehlern oder Verbesserungsvorschlägen:
 
 ## Beteiligte Personen
 
-Die Software wurde ursprünglich im Rahmen einer Bachelorarbeit von T. Kirupakaran unter der Betreuung von Dr. A. Egger und P. Sieber entwickelt.  
-Die Weiterentwicklung der Software erfolgte im Rahmen einer Master-Projektarbeit von M. Eichenberger unter der Betreuung von Dr. A. Egger und F. Betti.  
+Die Software wurde ursprünglich im Rahmen einer Bachelorarbeit von Thurga Kirupakaran unter der Betreuung von Dr. Adrian Egger und Dr. Paul Sieber entwickelt.  
+Die Weiterentwicklung der Software erfolgte im Rahmen einer Master-Projektarbeit von Maximilian Eichenberger unter der Betreuung von Dr. Adrian Egger und Federico Betti.  
 Die betreuende Professorin war in beiden Projekten Prof. Dr. Eleni Chatzi.
