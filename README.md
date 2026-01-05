@@ -1,27 +1,135 @@
-# Lernsoftware zur direkten Steifigkeitsmethode
+# Lernsoftware zur Direkten Steifigkeitsmethode (DSM)
 
-Diese Software dient der Vorlesung "Baustatik II", welche im 4.Semester des BSc Bauingenieurwesens an der ETH Zürich angeboten wird. Sie soll den Studierenden die Möglichkeit bieten eigene Tragsysteme zu entwerfen, dessen **Schnittkräfte**, **Auflagerreaktionen** oder **Einflusslinien** bestimmt werden. Diese können mit den eigenen Lösungen verglichen werden. Dadurch bietet die Software weitere Übungsmöglichkeiten nebst den Hausübungen und Kolloquien. 
-Dies wurde in MATLAB entwickelt, da die Studierenden durch die Bonus-Abgaben bereits damit vertraut sind.
-# Installation / Nutzung
+MATLAB-basierte **Lehrsoftware zur Berechnung von Schnittkräften, Auflagerreaktionen und Einflusslinien** mithilfe der **Direkten Steifigkeitsmethode (DSM)** – inklusive **grafischer Benutzeroberfläche (GUI)**.
 
-Um die Software herunterzuladen, drücke auf den grünen Knopf 'Code' und dort auf 'Download ZIP'. Danach kannst du im _src_-Ordner das InputFile (file _InputFile.m_) öffnen. Weitere Instruktionen zu wie man die Software verwendet sind direkt im InputFile erklärt.
+Die Software richtet sich primär an Studierende der Vorlesung „Baustatik II" im 4. Semester des Bachelorstudiums Bauingenieurwissenschaften an der ETH Zürich. Die Software soll Studierenden ermöglichen, eigene Tragsysteme zu modellieren, deren Schnittkräfte, Auflagerreaktionen oder Einflusslinien zu berechnen, und die Resultate direkt mit eigenen Handrechnungen zu vergleichen.
 
-Die Software wurde mit dem Matlabrelease 2022b getestet.
+---
 
-# Funktionsumfang
-Mit der Software können eigene Tragsysteme mit verschiedenen Elementen (auch Federn, vorgeschriebene Verschiebungen, alle Stabendegelenke, verschiedene Arten von Lasten) entworfen werden. Danach kann ausgewählt werden, ob die Schnittkräfte, die Auflagerreaktionen oder die Einflusslinie angezeigt werden sollen. Je nach gewünschtem Output muss man verschiedene Schritte im InputFile bearbeiten, dies ist jedoch im InputFile genauer erklärt.
+## Installation & Nutzung
 
-Hier zwei Beispiele:
-![](docs/figures/SKDiagramm_10.jpg)
-![](docs/figures/EL_K7_2_Mc.jpg)
+### Voraussetzungen
 
-Auch bietet die Software die Möglichkeit Stäbe des Tragwerks zu Teilsystemen zusammenzusetzen. Diese Option ist jedoch noch nicht vollständig integriert und ist für die Zukunft vorgesehen.
+- MATLAB **R2025b** (getestet; frühere Versionen nicht verifiziert)  
 
-# Beteiligte Personen
-Diese Software wurde als BA-Arbeit von T. Kirupakaran unter der Betreuung von Dr. A. Egger und P. Sieber entwickelt. Die betreuende Dozentin war Prof. Dr. Eleni Chatzi.
+### Installation
+
+**Variante 1: Repository klonen**
+
+Führe den folgenden Befehl in einem Terminal aus:
+
+    git clone https://github.com/ETH-IBK-SMECH/DSM-und-Einflusslinien.git
+
+**Variante 2: ZIP-Download**
+
+1. Klicke auf **Code → Download ZIP**
+2. Entpacke das Repository
+
+### Start der Software
+
+1. Öffne MATLAB, indem du die Datei `startup.m` per Doppelklick öffnest. Dadurch wird der Projektpfad korrekt gesetzt.
+
+2. Starte die grafische Benutzeroberfläche, indem du im MATLAB Command Window eingibst:
+
+       GUI
+
+---
+
+## Projektstruktur
+
+Die Software ist modular aufgebaut und weist eine klare Trennung zwischen Rechenkern (DSM), grafischer Benutzeroberfläche (GUI) und dem übergeordneten Ausführungsablauf auf.
 
 
-# Zitieren dieser Software
 
-# Lizenz
+```text
+src/
+├── Main/
+│   ├── MatrizenStatik.m                 # Hauptablauf
+│   └── DirectStiffnessMethod.m          # DSM-Steuerung
+├── DSM/                                 # Solverkern (Direkte Steifigkeitsmethode)
+│   ├── Vorbereitung/                    # Eingabeaufbereitung
+│   ├── Assemblierung/                   # Systemaufbau
+│   ├── Loesen/                          # Lösen des Gleichungssystems
+│   ├── Nachrechnung/                    # Schnittgrössen und Reaktionen
+│   ├── Output/                          # Ausgabe und Visualisierung
+│   └── Hilfsfunktionen/                 # Allgemeine Hilfs- und Utility-Funktionen
+└── GUI/
+    ├── @GUI/
+    │   ├── GUI.mlapp                    # Benutzeroberfläche
+    │   ├── guiToInput.m                 # GUI → Solver
+    │   ├── buildPreviewModel.m          # Vorschau-Modell
+    │   └── updateLiveViewer.m           # Live-Darstellung
+    └── Validation/                      # Eingabeprüfung
+```
 
+---
+
+## GUI & Ergebnisbeispiele
+
+Beispielhafte Resultate aus der Software:
+
+<table>
+  <tr>
+    <td align="center">
+      <img src="docs/figures/einflusslinie.png" width="100%">
+      <br>
+      <em>Einflusslinie (Beispiel)</em>
+    </td>
+    <td align="center">
+      <img src="docs/figures/system_vorschau.png" width="100%">
+      <br>
+      <em>Systemvorschau in der GUI</em>
+    </td>
+  </tr>
+</table>
+
+<img src="docs/figures/schnittkraefte.png" width="100%">
+<em>Schnittkraftdiagramme (N, V, M)</em>
+
+<br><br>
+
+<img src="docs/figures/GUI_berechnung.png" width="100%">
+<em>Eingabe und Visualisierung in der GUI</em>
+
+---
+
+## Video-Tutorial
+
+Ein kurzes Video-Tutorial befindet sich im Ordner `docs/`.  
+Es dient als kompakter Einstieg und Überblick über die Nutzung der App und erklärt
+
+- wie die Software installiert und gestartet wird,
+- welche Hauptfunktionen und Features die App bietet,
+- und wie ein vollständiges Beispielsystem in der GUI aufgebaut und ausgewertet wird.
+
+--- 
+
+## GUI & Erweiterbarkeit
+
+Die GUI stellt die **primäre Schnittstelle** zur Software dar und erlaubt es, Tragwerke
+schrittweise aufzubauen und Resultate direkt visuell zu überprüfen.
+
+Der zugrunde liegende Code ist **modular** aufgebaut:
+
+- Neue Elemente, Lastfälle oder Auswertungen können einfach ergänzt werden.
+- GUI und Rechenkern können unabhängig weiterentwickelt werden.
+
+Für Studierende, die sich vertieft mit der Implementierung der DSM auseinandersetzen möchten, stellt die Datei `src/Main/DirectStiffnessMethod.m` den **zentralen Einstiegspunkt** dar. Dort sind die wesentlichen mechanischen Rechenschritte der Direkten Steifigkeitsmethode klar aufgeführt und **strukturell analog zur Behandlung im Kurs „Baustatik II"** organisiert.
+
+---
+
+## Hinweise und Support
+
+Bei Problemen, Fehlern oder Verbesserungsvorschlägen:
+
+- Bitte zuerst prüfen, ob bereits ein entsprechendes **Issue** existiert
+- Andernfalls ein neues **GitHub Issue** eröffnen
+- Alternativ direkt Kontakt mit den **Betreuenden des Projekts** aufnehmen
+
+---
+
+## Beteiligte Personen
+
+Die Software wurde ursprünglich im Rahmen einer Bachelorarbeit von T. Kirupakaran unter der Betreuung von Dr. A. Egger und P. Sieber entwickelt.  
+Die Weiterentwicklung der Software erfolgte im Rahmen einer Master-Projektarbeit von M. Eichenberger unter der Betreuung von Dr. A. Egger und F. Betti.  
+Die betreuende Professorin war in beiden Projekten Prof. Dr. Eleni Chatzi.
