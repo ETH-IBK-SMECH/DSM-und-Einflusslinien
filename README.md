@@ -95,7 +95,12 @@ Beispielhafte Resultate aus der Software:
 
 ## Video-Tutorial
 
-[![Video-Tutorial zur DSM Lernsoftware](docs/figures/video_thumbnail.png)](video link)
+Ein kurzes Video-Tutorial befindet sich im Ordner `docs/`.  
+Es dient als kompakter Einstieg und Überblick über die Nutzung der App und erklärt
+
+- wie die Software installiert und gestartet wird,
+- welche Hauptfunktionen und Features die App bietet,
+- und wie ein vollständiges Beispielsystem in der GUI aufgebaut und ausgewertet wird.
 
 --- 
 
@@ -123,11 +128,8 @@ Bei Problemen, Fehlern oder Verbesserungsvorschlägen:
 
 ---
 
-## Zitieren dieser Software
+## Beteiligte Personen
 
----
-
-## Lizenz
-
----
-
+Die Software wurde ursprünglich im Rahmen einer Bachelorarbeit von T. Kirupakaran unter der Betreuung von Dr. A. Egger und P. Sieber entwickelt.  
+Die Weiterentwicklung der Software erfolgte im Rahmen einer Master-Projektarbeit von M. Eichenberger unter der Betreuung von Dr. A. Egger und F. Betti.  
+Die betreuende Professorin war in beiden Projekten Prof. Dr. Eleni Chatzi.
