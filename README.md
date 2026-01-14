@@ -95,12 +95,15 @@ Beispielhafte Resultate aus der Software:
 
 ## Video-Tutorial
 
-Ein kurzes Video-Tutorial befindet sich im Ordner `docs/`.  
-Es dient als kompakter Einstieg und Überblick über die Nutzung der App und erklärt
+Ein kurzes [Video-Tutorial](https://youtu.be/pRkyfy_sgU8) bietet einen kompakten Einstieg und Überblick über die Nutzung der App.  
+
+Es erklärt
 
 - wie die Software installiert und gestartet wird,
 - welche Hauptfunktionen und Features die App bietet,
 - und wie ein vollständiges Beispielsystem in der GUI aufgebaut und ausgewertet wird.
+
+**Direktlink:** https://youtu.be/pRkyfy_sgU8
 
 --- 
 
