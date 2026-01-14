@@ -24,7 +24,7 @@ for i = 1:numel(Feder)
     localIdx = (Feder(i).node - 1) * nkd + Feder(i).dir;
     g = safeDOF(localIdx, DOF);
     if g ~= 0
-        Feder(i).Reaktion = R_sys(g);
+        Feder(i).Reaktion = -Feder(i).val * U_sys(g);
     else
         Feder(i).Reaktion = 0;
     end
